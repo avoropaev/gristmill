@@ -89,6 +89,7 @@ async function createFixture(
         disconnect: () => {},
         getConnectionStatus: () => ({
           connected: true,
+    sync: { state: "synced" as const, requiresReconnect: false },
           configured: true,
           accounts: [{ email: "g@example.org" }],
           email: "g@example.org",
@@ -101,8 +102,9 @@ async function createFixture(
       microsoftManager: {
         startOAuth: async () => ({ success: true, email: "m@example.org" }),
         disconnect: () => {},
-        getConnectionStatus: () => ({ connected: false, configured: false, accounts: [] }),
+        getConnectionStatus: () => ({ connected: false, configured: false, accounts: [], sync: { state: "pending" as const, requiresReconnect: false } }),
         setPrimaryOnly: async () => {},
+            syncEvents: async () => {},
       },
       appleManager: {
         connect: async () => ({ success: true }),
@@ -151,6 +153,7 @@ test("command shapes cross the bundled preload per provider", async () => {
   assert.deepEqual(plain(await api.gcalStartOAuth()), { success: true, email: "g@example.org" });
   assert.deepEqual(plain(await api.gcalGetConnectionStatus()), {
     connected: true,
+    sync: { state: "synced" as const, requiresReconnect: false },
     configured: true,
     accounts: [{ email: "g@example.org" }],
     email: "g@example.org",
@@ -163,6 +166,7 @@ test("command shapes cross the bundled preload per provider", async () => {
 
   assert.deepEqual(plain(await api.mcalGetConnectionStatus()), {
     connected: false,
+    sync: { state: "pending" as const, requiresReconnect: false },
     configured: false,
     accounts: [],
   });
