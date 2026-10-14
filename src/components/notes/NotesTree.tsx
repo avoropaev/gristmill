@@ -19,7 +19,8 @@ import {
 import { Button } from "../ui/button";
 import { Popover, PopoverAnchor, PopoverContent } from "../ui/popover";
 import { EmojiIconGrid } from "./EmojiIconPicker";
-import { folderColorHex } from "./folderColors";
+import { RowGlyph } from "./folderAppearance";
+import { folderColorHex, tintStyle } from "./folderColors";
 import { InlineRename } from "./InlineRename";
 import { Dropdown, Label, Separator } from "@heroui/react";
 import { MENU_ITEM_CLASS } from "../ui/surfaceStyles";
@@ -64,13 +65,6 @@ import {
   getNoteFromStore,
   runInBackground,
 } from "../../stores/noteStore";
-
-// Custom properties are outside React.CSSProperties; the row reads them in CSS.
-function tintStyle(
-  tint: string
-): React.CSSProperties & { "--tint": string; "--tint-strong": string } {
-  return { "--tint": `${tint}26`, "--tint-strong": `${tint}40` };
-}
 
 type TFn = (key: string, options?: Record<string, string | number>) => string;
 
@@ -161,12 +155,14 @@ export function MoveFolderPicker({
         label: t("sidebar.notes"),
         target: { folderId: null },
         isRoot: true,
+        folder: undefined,
       },
       ...folders.map((folder) => ({
         key: folderContainerKey(folder.id),
         label: defaultFolderDisplayName(folder, t),
         target: { folderId: folder.id },
         isRoot: false,
+        folder,
       })),
     ],
     [folders, t]
@@ -202,12 +198,25 @@ export function MoveFolderPicker({
                 onMove(option.target);
                 onDone();
               }}
-              className={cn(MENU_ITEM_CLASS, "w-full", !option.isRoot && "ps-7")}
+              style={
+                option.folder?.color
+                  ? tintStyle(folderColorHex(option.folder.color) ?? "")
+                  : undefined
+              }
+              className={cn(
+                MENU_ITEM_CLASS,
+                "w-full",
+                !option.isRoot && "ps-7",
+                option.folder?.color && "bg-(--tint) hover:bg-(--tint-strong)"
+              )}
             >
               {option.isRoot ? (
                 <Folder size={14} className="shrink-0 text-muted" />
               ) : (
-                <FolderOpen size={14} className="shrink-0 text-muted" />
+                <RowGlyph
+                  icon={option.folder?.icon}
+                  fallback={<FolderOpen size={14} className="shrink-0 text-muted" />}
+                />
               )}
               <span
                 dir="auto"
@@ -362,20 +371,6 @@ function PointMenu({
           </Dropdown.Menu>
         </Dropdown.Popover>
       </Dropdown>
-    </span>
-  );
-}
-
-/** Emoji icon of a note or folder, or the default glyph. */
-function RowGlyph({ icon, fallback }: { icon?: string | null; fallback: React.ReactNode }) {
-  if (!icon) return <>{fallback}</>;
-
-  return (
-    <span
-      aria-hidden="true"
-      className="flex size-3.5 shrink-0 items-center justify-center text-[13px] leading-none"
-    >
-      {icon}
     </span>
   );
 }
@@ -1192,14 +1187,13 @@ export default function NotesTree({
               dragState.dragOverKey === ROOT_CONTAINER_KEY && "ring-1 ring-primary bg-primary/10"
             )}
           >
-            <span className="flex-1 truncate text-xs font-medium text-muted">
-              {t("sidebar.notes")}
-            </span>
+            <span className="truncate text-xs font-medium text-muted">{t("sidebar.notes")}</span>
             {rootCount + Object.values(folderCounts).reduce((sum, count) => sum + count, 0) > 0 && (
-              <span className="text-2xs text-muted">
+              <span className="text-2xs text-muted tabular-nums">
                 {rootCount + Object.values(folderCounts).reduce((sum, count) => sum + count, 0)}
               </span>
             )}
+            <span className="flex-1" />
             {folderKeys.length > 0 && (
               <Button
                 variant="ghost"

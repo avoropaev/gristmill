@@ -575,7 +575,7 @@ async function mountPanel(
       capturePhase,
       actions,
       mockPipeline,
-      fallbackText: { raw: "Manual notes", enhanced: "", transcript: "No transcript" },
+      fallbackText: { raw: "Manual notes", enhanced: "", transcript: "" },
       manualContent: React.createElement("p", null, "Manual notes"),
       renderFallbackTranscript: () => React.createElement("p", null, "No transcript"),
       fallbackSummary: (selectedSummaryAction: SummaryActionState) =>
@@ -798,14 +798,14 @@ test("interrupted recordings keep audio and transcript available without capture
   );
 });
 
-test("audio count and list include a newly saved recording without reload", async (t: TestContext) => {
+test("audio list includes a newly saved recording without reload", async (t: TestContext) => {
   const first = recording(FIRST, FIRST, "2026-09-25T10:00:00.000Z");
   const second = recording(SECOND, SECOND, "2026-09-25T11:00:00.000Z");
   const ui = await mountPanel(t, [first]);
   assert.equal(ui.warningIcons(), 0);
-  assert.ok(ui.label("Transcript and audio 1"));
+  assert.ok(ui.label("Transcript and audio"));
   await ui.saveRecording([first, second]);
-  assert.ok(ui.label("Transcript and audio 2"));
+  assert.ok(ui.label("Transcript and audio"));
   assert.equal(ui.text().match(/\bmin\b/g)?.length, 2);
   assert.equal(ui.text().match(/Sep 25, 2026/g)?.length, 1);
 });
@@ -814,7 +814,7 @@ test("previously deleted audio is absent from the popover", async (t: TestContex
   const deleted = recording(FIRST, FIRST, "2026-09-25T10:00:00.000Z");
   deleted.recording.audioState = "deleted";
   const ui = await mountPanel(t, [deleted, recording(SECOND, SECOND, "2026-09-25T11:00:00.000Z")]);
-  assert.ok(ui.label("Transcript and audio 1"));
+  assert.ok(ui.label("Transcript and audio"));
   assert.equal(ui.text().match(/\bmin\b/g)?.length, 1);
 });
 
@@ -832,7 +832,7 @@ test("audio part actions export a mixed MP3 and confirm deletion without a trans
   assert.equal(ui.dialog().open, true);
   await ui.flush(() => ui.dialog().onConfirm());
   assert.deepEqual(ui.calls.delete, [FIRST]);
-  assert.ok(ui.label("Transcript and audio 0"));
+  assert.ok(ui.label("Transcript and audio"));
   assert.equal(ui.iconButton("Play audio"), null);
 });
 
@@ -1696,3 +1696,31 @@ test("automatic recovery shows the available result without exclusion or retry c
   assert.deepEqual(ui.calls.create, [], "opening the result does not require another processing click");
   assert.deepEqual(ui.calls.delete, []);
 });
+
+for (const hasTranscript of [false, true]) {
+  test(`audio indicator shows a dot only before a transcript exists (${hasTranscript})`, async (t: TestContext) => {
+    const ui = await mountPanel(
+      t,
+      [recording(FIRST, FIRST, "2026-09-25T10:00:00.000Z", hasTranscript ? completeRun() : null)],
+      {
+        noteTranscript: {
+          note_id: 1,
+          status: hasTranscript ? "ready" : "pending",
+          text: "",
+          segments: null,
+          speakers: [],
+          timeline: {
+            unit: "ms",
+            duration_ms: null,
+            basis: "concatenated_recording_time",
+            intentional_pauses: "excluded",
+          },
+          diagnostics: [],
+        },
+      }
+    );
+    const dot = findNode(ui.tree(), (node) => node.props?.["data-testid"] === "pending-transcript-dot");
+    assert.equal(Boolean(dot), !hasTranscript);
+    assert.ok(ui.label("Transcript and audio"));
+  });
+}
