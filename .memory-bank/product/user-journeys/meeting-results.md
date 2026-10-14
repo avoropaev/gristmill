@@ -43,7 +43,8 @@ As a Gristmill user, I want to review the audio, the transcript and the Summary 
 ### Fix a failed or blocked run
 
 1. If a run fails, the note shows the failed stage and **Your audio is saved.** Check the connection and the API key, then click **Retry**.
-2. If a run waits for settings, click **Open settings**, select a provider or a model, then click **Retry with current settings**.
+2. If Gristmill could not prepare the recording, **Retry** selects the audio parts again. A newer app version can prepare a part that an earlier version skipped.
+3. If a run waits for settings, click **Open settings**, select a provider or a model, then click **Retry with current settings**.
 
 ### Work with one audio part
 

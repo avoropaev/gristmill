@@ -1594,7 +1594,7 @@ for (const [code, description] of [
   });
 }
 
-test("an unrecoverable recording explains that audio is saved without manual repair controls", async (t: TestContext) => {
+test("a recording with every part omitted explains that audio is saved and offers Retry", async (t: TestContext) => {
   const failed = completeRun();
   failed.run.status = "failed";
   failed.run.stage = "prepare";
@@ -1611,9 +1611,12 @@ test("an unrecoverable recording explains that audio is saved without manual rep
   assert.match(ui.text(), /Could not prepare the recording/);
   assert.match(ui.text(), /could not be prepared for transcription/);
   assert.doesNotMatch(ui.text(), /connection|API key|waiting for settings/);
-  assert.equal(ui.button("meetingResults.retry"), null);
+  assert.deepEqual(ui.calls.retry, [], "opening an old error must not send audio");
+  const retry = ui.button("meetingResults.retry");
+  assert.ok(retry, "a later app version can prepare the omitted part");
+  await ui.flush(() => (retry.props as { onPress(): void }).onPress());
+  assert.deepEqual(ui.calls.retry, [RUN]);
   assert.equal(ui.button("Review audio parts"), null);
-  assert.deepEqual(ui.calls.retry, []);
   assert.deepEqual(ui.calls.delete, []);
 });
 

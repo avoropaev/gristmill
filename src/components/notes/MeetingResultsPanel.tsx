@@ -792,7 +792,7 @@ export default function MeetingResultsPanel({
     latestRun &&
     latestRun.run.stage === "prepare" &&
     !latestRun.run.hasRawProviderResponse &&
-    latestRun.run.omittedRecordingIds.length === 0 &&
+    // Retry selects the parts again. A later app version can prepare an omitted part.
     [
       "capture-write-failed",
       "audio-write-failed",
