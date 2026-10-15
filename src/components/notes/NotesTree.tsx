@@ -207,7 +207,8 @@ export function MoveFolderPicker({
                 MENU_ITEM_CLASS,
                 "w-full",
                 !option.isRoot && "ps-7",
-                option.folder?.color && "bg-(--tint) hover:bg-(--tint-strong)"
+                option.folder?.color &&
+                  "bg-(--tint) hover:bg-(--tint-strong) focus:bg-(--tint-strong)"
               )}
             >
               {option.isRoot ? (

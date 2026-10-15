@@ -984,7 +984,8 @@ export default function NoteEditor({
                           className={cn(
                             MENU_ITEM_CLASS,
                             "w-full gap-2 text-xs",
-                            folder.color && "bg-(--tint) hover:bg-(--tint-strong)"
+                            folder.color &&
+                              "bg-(--tint) hover:bg-(--tint-strong) focus:bg-(--tint-strong)"
                           )}
                         >
                           <RowGlyph
