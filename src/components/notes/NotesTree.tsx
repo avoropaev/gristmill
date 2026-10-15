@@ -184,7 +184,7 @@ export function MoveFolderPicker({
           className="h-8 rounded-lg px-2.5 text-sm"
         />
       )}
-      <div className="-mx-1 max-h-64 overflow-y-auto">
+      <div className="-mx-1 grid max-h-64 gap-1 overflow-y-auto">
         {filtered.map((option) => {
           const isCurrent =
             option.target.folderId === note.folder_id && note.folder_ids.length <= 1;

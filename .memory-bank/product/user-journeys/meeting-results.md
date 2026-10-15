@@ -13,6 +13,7 @@ As a Gristmill user, I want to review the audio, the transcript and the Summary 
 
 1. Open the note after Stop. During processing, the note shows the stage: preparing audio, transcribing, saving the transcript, writing the Summary. You can write notes during this time.
 2. When processing completes, read the Summary.
+   Renaming the note does not mark the saved Summary as outdated or show a dismissed notice again. Changes to its source notes, participants or speaker names can still mark it as outdated.
 3. Open the Transcript/Audio popover. It opens on Audio first. Switch to the transcript to read who said what.
 4. Click **Copy** to copy the transcript.
 

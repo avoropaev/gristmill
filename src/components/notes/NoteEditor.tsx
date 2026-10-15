@@ -959,7 +959,7 @@ export default function NoteEditor({
                       />
                     </div>
                   )}
-                  <div className="max-h-48 overflow-y-auto">
+                  <div className="grid max-h-48 gap-1 overflow-y-auto">
                     {filteredFolders.map((folder) => {
                       const isMember = note.folder_ids.includes(folder.id);
 
