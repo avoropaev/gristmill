@@ -119,15 +119,28 @@ function mapInterval(
     )
     .sort((a, b) => (BigInt(a.clock.hostStartNs) < BigInt(b.clock.hostStartNs) ? -1 : 1));
 
-  let previous: MeetingAudioClockAnchor | undefined;
+  let previous: (typeof anchors)[number] | undefined;
   let startSeconds: number | undefined;
   let endSeconds = 0;
   const ids: string[] = [];
 
   while (cursor < end) {
-    const matching = anchors.filter(
-      (a) => BigInt(a.clock.hostStartNs) <= cursor && BigInt(a.clock.hostEndNs) > cursor
-    );
+    const matching = anchors.filter((a) => {
+      const hostStart = BigInt(a.clock.hostStartNs);
+
+      // Independent native start/duration truncation can leave at most 1 ns.
+      const roundedBoundary =
+        previous &&
+        cursor === BigInt(previous.clock.hostEndNs) &&
+        hostStart === cursor + 1n &&
+        previous.epochIndex === a.epochIndex &&
+        previous.clock.generation === a.clock.generation &&
+        previous.clock.endFrame === a.clock.startFrame &&
+        previous.clock.timebaseNumer === a.clock.timebaseNumer &&
+        previous.clock.timebaseDenom === a.clock.timebaseDenom;
+
+      return (hostStart <= cursor || roundedBoundary) && BigInt(a.clock.hostEndNs) > cursor;
+    });
 
     if (matching.length !== 1) return "clock-coverage-gap";
     const a = matching[0];
@@ -174,6 +187,7 @@ function mapInterval(
         (Number(ns - hostStart) / 1e9 / duration) * (c.endFrame - c.startFrame)) /
       24_000;
 
+    if (cursor < hostStart) cursor = hostStart;
     startSeconds ??= map(cursor);
     cursor = end < hostEnd ? end : hostEnd;
     endSeconds = map(cursor);
@@ -405,48 +419,49 @@ export function matchMeetingPlatformSpeakers(
     return { ...decision, status: "accepted", reason: "repeated-activity-agreement" };
   });
 
+  // Only qualified episodes establish identity; final rejections must not
+  // change the evidence seen by later decisions.
+  const episodeResults = decisions.map((decision) => ({ ...decision }));
+  const qualified = episodeResults.filter((decision) => decision.status === "accepted");
+
   for (const decision of decisions) {
     const policy = policyFor(decision.platform);
 
-    if (!decision.speakerId) continue;
-    const sameSpeaker = decisions.filter((d) => d.speakerId === decision.speakerId);
+    if (decision.status !== "accepted" || !decision.speakerId) continue;
+    const sameSpeaker = qualified.filter((d) => d.speakerId === decision.speakerId);
     const names = new Set(sameSpeaker.map((d) => d.displayName));
 
     // A name that reliably points at different clusters is ambiguous, even if
     // AX objects were recreated. Sequential recreation alone is harmless.
     const nameSpeakers = new Set(
-      decisions
+      qualified
         .filter((d) => d.displayName === decision.displayName && d.speakerId)
         .map((d) => d.speakerId)
     );
 
     const episodes = new Set(
-      sameSpeaker
-        .filter((d) => d.status === "accepted")
-        .flatMap((d) =>
-          input.observations
-            .filter((o) => d.observationIds.includes(o.id))
-            .map((o) => `${o.recordingId}/${o.sessionId}/${o.episodeId}`)
-        )
+      sameSpeaker.flatMap((d) =>
+        input.observations
+          .filter((o) => d.observationIds.includes(o.id))
+          .map((o) => `${o.recordingId}/${o.sessionId}/${o.episodeId}`)
+      )
     );
 
     const bouts = union(system.filter((s) => s.speaker === decision.speakerId));
 
     const supportedBouts = new Set(
-      sameSpeaker
-        .filter((d) => d.status === "accepted")
-        .flatMap((d) =>
-          bouts.flatMap((bout, index) =>
-            d.intervals.some((i) =>
-              overlaps(bout, {
-                start: i.start - policy.indicatorDelaySeconds + policy.boundaryGuardSeconds,
-                end: i.end - policy.indicatorDelaySeconds - policy.boundaryGuardSeconds,
-              })
-            )
-              ? [index]
-              : []
+      sameSpeaker.flatMap((d) =>
+        bouts.flatMap((bout, index) =>
+          d.intervals.some((i) =>
+            overlaps(bout, {
+              start: i.start - policy.indicatorDelaySeconds + policy.boundaryGuardSeconds,
+              end: i.end - policy.indicatorDelaySeconds - policy.boundaryGuardSeconds,
+            })
           )
+            ? [index]
+            : []
         )
+      )
     );
 
     const reason =
@@ -454,7 +469,9 @@ export function matchMeetingPlatformSpeakers(
         ? "conflicting-names"
         : nameSpeakers.size > 1
           ? "name-multiple-clusters"
-          : sameSpeaker.some((d) => d.reason === "duplicate-display-name") ||
+          : episodeResults.some(
+                (d) => d.speakerId === decision.speakerId && d.reason === "duplicate-display-name"
+              ) ||
               input.observations.some(
                 (o) =>
                   o.displayName === decision.displayName && o.reason === "duplicate-display-name"
@@ -464,13 +481,7 @@ export function matchMeetingPlatformSpeakers(
               ? "insufficient-independent-episodes"
               : null;
 
-    // Compute before mutating: episode counts must not depend on iteration order.
-    if (
-      reason &&
-      (decision.status === "accepted" || reason !== "insufficient-independent-episodes")
-    ) {
-      decision.reason = reason;
-    }
+    if (reason) decision.reason = reason;
   }
 
   for (const d of decisions) if (d.reason !== "repeated-activity-agreement") d.status = "rejected";
