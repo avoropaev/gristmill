@@ -47,6 +47,7 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["notes:list-operations"]?.mutate, ["src/stores/noteListOps.ts"]);
   assert.deepEqual(targets["calendar:availability"]?.mutate, ["src/helpers/calendarAvailability.ts"]);
   assert.deepEqual(targets["platform:endpoint-policy"]?.mutate, ["src/utils/urlUtils.ts"]);
+  assert.deepEqual(targets["platform:companion-protocol"]?.mutate, ["src/helpers/companionFrames.ts", "src/contracts/companion.ts"]);
   assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
   assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
 });
