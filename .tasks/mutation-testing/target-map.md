@@ -4,7 +4,8 @@ Execution tracking: [meta issue #346](https://github.com/timurkhakhalev/gristmil
 The meta issue and GitHub milestones own task status and dependencies.
 This document keeps the initial source-review map.
 
-This is a planning draft. Only `recording:resampler-mapping` is registered in
+This is a planning draft. Only `recording:resampler-mapping` and
+`recording:clock-sync` are registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,

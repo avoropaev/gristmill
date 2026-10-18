@@ -26,6 +26,11 @@ pnpm mutation --target recording:resampler-mapping --mode dry-run
 pnpm mutation --target recording:resampler-mapping --mode full
 ```
 
+Every registered target runs through the same command with its own ID; `--list`
+prints the current allowlist. A new registry entry changes the shared runner
+inputs, so existing target fingerprints change and their next run needs a fresh
+dry run on the new definition.
+
 Run dry first for a new target or after changes to scope, focused tests, runner,
 config, dependencies, toolchain or provider. A matching successful dry/full
 artifact permits a direct full run. Compare its fingerprint and runtime inputs;
