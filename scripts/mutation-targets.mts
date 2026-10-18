@@ -68,6 +68,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/notes/pending-save",
   },
+  "recording:meet-speaker-evidence": {
+    mutate: ["src/helpers/meetSpeakerEvidence.ts"],
+    testFiles: ["test/cases/platform/unit/meetSpeakerEvidence.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/meet-speaker-evidence",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
