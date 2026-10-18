@@ -148,6 +148,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/notes/list-operations",
   },
+  "calendar:availability": {
+    mutate: ["src/helpers/calendarAvailability.ts"],
+    testFiles: ["test/helpers/calendarAvailability.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/calendar/availability",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
