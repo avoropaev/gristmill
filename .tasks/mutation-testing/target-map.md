@@ -5,7 +5,8 @@ The meta issue and GitHub milestones own task status and dependencies.
 This document keeps the initial source-review map.
 
 This is a planning draft. Only `recording:resampler-mapping` is registered in
-[stryker.config.mts](../../stryker.config.mts). Other IDs below are proposed
+the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
+Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,
 change tests or start cloud executions.
 

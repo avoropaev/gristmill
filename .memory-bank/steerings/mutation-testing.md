@@ -1,8 +1,18 @@
 # Mutation testing
 
-The pilot target is `recording:resampler-mapping`. `stryker.config.mts` binds the
-production file, focused tests, reports and limits. `pnpm mutation --list` shows
-the supported target. Unknown targets and modes fail before Stryker starts.
+Mutation targets are the explicit allowlist in `scripts/mutation-targets.mts`.
+Each entry binds one target ID to its production scope, focused tests, direct
+dependencies and artifact directory. `stryker.config.mts` resolves the target
+from the `MUTATION_TARGET` value that the runner exports after validating the
+CLI selection, then derives the Stryker command, mutate scope, reporters and
+limits from it. There is no whole-repository default: without a registered
+target, Stryker fails at config load.
+
+`pnpm mutation --list` prints the registered target IDs. Unknown targets and
+modes, missing scope files and unsafe paths (absolute, escaping or
+non-normalized paths, artifact directories outside `reports/mutation/`) fail
+before Stryker starts. Reports stay separate per target under
+`reports/mutation/<target-slug>/`.
 
 The command runner uses the existing canonical `pnpm test` path and `node:test`.
 It does not add another test framework. Coverage analysis is off: every mutant
@@ -11,6 +21,7 @@ from other survivors. A dry run checks the instrumented baseline and has no
 mutation score.
 
 ```sh
+pnpm mutation --list
 pnpm mutation --target recording:resampler-mapping --mode dry-run
 pnpm mutation --target recording:resampler-mapping --mode full
 ```
@@ -60,9 +71,10 @@ other jobs; a timeout limits one execution but does not enforce a monthly budget
 
 ## Evidence
 
-Reports are ignored under `reports/mutation/recording/resampler-mapping/`.
-`metadata.json` records mode, base commit, dirty state, provider, runtime,
-fingerprint, timing, limits, exit status and distinct mutation outcomes.
+Reports are ignored under `reports/mutation/<target-slug>/` (the pilot:
+`reports/mutation/recording/resampler-mapping/`). `metadata.json` records mode,
+base commit, dirty state, provider, runtime, fingerprint and its input file
+list, timing, limits, exit status and distinct mutation outcomes.
 A dry run has `outcomeCounts: null`; JSON and HTML mutation reports require full
 mode. The entrypoint attempts report upload on command failure and preserves a
 nonzero command status. An upload failure also fails the job.

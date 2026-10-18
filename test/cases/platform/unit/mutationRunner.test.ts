@@ -2,14 +2,85 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 
-test("mutation arguments reject unknown targets and invalid modes before execution", async () => {
+test("mutation arguments reject malformed selections and unknown targets before execution", async () => {
   const { parseArguments } = await import("../../../../scripts/mutation.mts");
   assert.equal(parseArguments(["--list"]), null);
   assert.deepEqual(parseArguments(["--target", "recording:resampler-mapping", "--mode", "dry-run"]), {
     target: "recording:resampler-mapping", mode: "dry-run",
   });
-  for (const args of [[], ["--target", "../../secrets", "--mode", "full"], ["--target", "recording:resampler-mapping", "--mode", "all"], ["--list", "--mode", "full"]]) {
+  for (const args of [[], ["--target", "recording:resampler-mapping"], ["--target", "recording:resampler-mapping", "--mode", "all"], ["--list", "--mode", "full"]]) {
     assert.throws(() => parseArguments(args), /Usage/);
+  }
+  assert.throws(() => parseArguments(["--target", "../../secrets", "--mode", "full"]), /Unknown mutation target/);
+});
+
+test("each registered target resolves independently with its own scope and the shared timeout policy", async () => {
+  const { targets, resolveTarget } = await import("../../../../scripts/mutation-targets.mts");
+  const artifactDirectories = new Set<string>();
+  for (const [id, scope] of Object.entries(targets)) {
+    const resolved = resolveTarget(id);
+    assert.equal(resolved.name, id);
+    assert.deepEqual(resolved.mutate, scope.mutate);
+    assert.deepEqual(resolved.testFiles, scope.testFiles);
+    assert.deepEqual(resolved.timeoutMs, { "dry-run": 300_000, full: 1_200_000 });
+    assert.equal(resolved.artifactDirectory.startsWith("reports/mutation/"), true);
+    assert.equal(artifactDirectories.has(resolved.artifactDirectory), false);
+    artifactDirectories.add(resolved.artifactDirectory);
+  }
+  assert.deepEqual(targets["recording:resampler-mapping"]?.mutate, ["src/helpers/meetingResamplerMapping.ts"]);
+  assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
+  assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
+});
+
+test("scope validation rejects unsafe and missing paths", async () => {
+  const { assertSafePath } = await import("../../../../scripts/mutation-targets.mts");
+  for (const candidate of ["/tmp/evil.ts", "../evil.ts", "src/../../evil.ts", "reports/mutation/../../evil", "src//evil.ts", "./src/evil.ts", "reports/mutation"]) {
+    assert.throws(
+      () => assertSafePath(candidate, { exists: true, under: "reports/mutation" }),
+      /Unsafe mutation path|must stay under|Missing mutation path/,
+    );
+  }
+  assertSafePath("scripts/mutation-targets.mts", { exists: true });
+  assertSafePath("reports/mutation/recording/resampler-mapping", { under: "reports/mutation" });
+  assert.throws(() => assertSafePath("scripts/this-synthetic-file-does-not-exist.mts", { exists: true }), /Missing mutation path/);
+});
+
+test("fingerprints change when any scoped input path or content changes", async () => {
+  const { fingerprintDigest } = await import("../../../../scripts/mutation.mts");
+  const input = [{ path: "src/synthetic.ts", content: "export const answer = 42;" }];
+  const baseline = fingerprintDigest(input);
+  assert.equal(fingerprintDigest([...input]), baseline);
+  assert.notEqual(fingerprintDigest([{ path: "src/synthetic.ts", content: "export const answer = 43;" }]), baseline);
+  assert.notEqual(fingerprintDigest([{ path: "src/renamed.ts", content: "export const answer = 42;" }]), baseline);
+  assert.notEqual(fingerprintDigest([...input, { path: "test/synthetic.test.ts", content: 'import { answer } from "../src/synthetic.js";' }]), baseline);
+});
+
+test("fingerprint inputs bind the selected scope, direct dependencies and shared runner files", async () => {
+  const { fingerprintFiles } = await import("../../../../scripts/mutation.mts");
+  const { resolveTarget } = await import("../../../../scripts/mutation-targets.mts");
+  const files = fingerprintFiles(resolveTarget("recording:resampler-mapping"));
+  for (const required of [
+    "stryker.config.mts",
+    "scripts/mutation-targets.mts",
+    "scripts/mutation-cloud/entrypoint.sh",
+    "src/helpers/meetingResamplerMapping.ts",
+    "src/helpers/meetingAudioAlignment.ts",
+    "test/cases/recording/unit/meetingResamplerMapping.test.ts",
+  ])
+    assert.equal(files.includes(required), true, `missing fingerprint input: ${required}`);
+  assert.equal(new Set(files).size, files.length);
+});
+
+test("stryker receives exactly the selected source and tests", async () => {
+  process.env.MUTATION_TARGET = "recording:resampler-mapping";
+  try {
+    const { default: config } = await import("../../../../stryker.config.mts");
+    assert.deepEqual(config.mutate, ["src/helpers/meetingResamplerMapping.ts"]);
+    assert.equal(config.commandRunner.command, "pnpm test -- test/cases/recording/unit/meetingResamplerMapping.test.ts");
+    assert.equal(config.concurrency, 1);
+    assert.deepEqual(config.thresholds, { high: 80, low: 60, break: null });
+  } finally {
+    delete process.env.MUTATION_TARGET;
   }
 });
 
