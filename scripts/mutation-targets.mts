@@ -62,6 +62,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/recording/speaker-assignment",
   },
+  "notes:pending-save": {
+    mutate: ["src/lib/noteEditorPendingSave.ts"],
+    testFiles: ["test/lib/noteEditorPendingSave.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/notes/pending-save",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
