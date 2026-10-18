@@ -4,7 +4,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { z } from "zod";
-import config, { target } from "../stryker.config.mts";
+import { resolveTarget, targetIds } from "./mutation-targets.mts";
 
 export const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -16,13 +16,14 @@ export function parseArguments(
   if (
     args.length !== 4 ||
     args[0] !== "--target" ||
-    args[1] !== target.name ||
     args[2] !== "--mode" ||
     (args[3] !== "dry-run" && args[3] !== "full")
   )
-    throw new Error(`Usage: --list | --target ${target.name} --mode dry-run|full`);
+    throw new Error(`Usage: --list | --target <${targetIds().join("|")}> --mode dry-run|full`);
 
-  return { target: target.name, mode: args[3] };
+  resolveTarget(args[1]);
+
+  return { target: args[1], mode: args[3] };
 }
 
 const reportSchema = z.object({
@@ -77,25 +78,17 @@ export function outcomeCounts(reportJson: string) {
   return counts;
 }
 
-async function main() {
-  const selected = parseArguments(process.argv.slice(2));
-
-  if (!selected) {
-    console.log(target.name);
-
-    return;
-  }
-
-  const startedAt = new Date();
-  const artifactDirectory = path.join(root, target.artifactDirectory);
-  // Remove prior reports so a failed dry/full run cannot inherit successful evidence.
-  await rm(artifactDirectory, { recursive: true, force: true });
-  await mkdir(artifactDirectory, { recursive: true });
-  const fingerprint = createHash("sha256");
-
-  for (const file of [
+// Shared runner, config and image inputs; the resolved target adds its scope,
+// direct dependencies and focused tests.
+export function fingerprintFiles(target: {
+  directDependencies: string[];
+  mutate: string[];
+  testFiles: string[];
+}): string[] {
+  return [
     "stryker.config.mts",
     "scripts/mutation.mts",
+    "scripts/mutation-targets.mts",
     "scripts/mutation-cloud/Dockerfile",
     "scripts/mutation-cloud/entrypoint.sh",
     "package.json",
@@ -104,13 +97,45 @@ async function main() {
     "scripts/test-selection.cts",
     "scripts/ensure-sqlite-runtime.cts",
     "test/test-groups.json",
-    "src/helpers/meetingAudioAlignment.ts",
-    "test/helpers/harness/meetingResampler.ts",
-    ...config.mutate,
+    ...target.directDependencies,
+    ...target.mutate,
     ...target.testFiles,
-  ]) {
-    fingerprint.update(file).update(await readFile(path.join(root, file)));
+  ];
+}
+
+export function fingerprintDigest(inputs: Array<{ path: string; content: string | Buffer }>) {
+  const fingerprint = createHash("sha256");
+
+  for (const input of inputs) fingerprint.update(input.path).update(input.content);
+
+  return fingerprint.digest("hex");
+}
+
+async function main() {
+  const selected = parseArguments(process.argv.slice(2));
+
+  if (!selected) {
+    console.log(targetIds().join("\n"));
+
+    return;
   }
+
+  const target = resolveTarget(selected.target);
+  // Stryker evaluates stryker.config.mts in this process; export the validated selection.
+  process.env.MUTATION_TARGET = selected.target;
+  const { default: config } = await import("../stryker.config.mts");
+
+  const startedAt = new Date();
+  const artifactDirectory = path.join(root, target.artifactDirectory);
+  // Remove prior reports so a failed dry/full run cannot inherit successful evidence.
+  await rm(artifactDirectory, { recursive: true, force: true });
+  await mkdir(artifactDirectory, { recursive: true });
+  const files = fingerprintFiles(target);
+  const inputs: Array<{ path: string; content: Buffer }> = [];
+
+  for (const file of files)
+    inputs.push({ path: file, content: await readFile(path.join(root, file)) });
+  const targetFingerprint = fingerprintDigest(inputs);
 
   const commit = process.env.CLOUD_RUN_EXECUTION
     ? z
@@ -211,9 +236,10 @@ async function main() {
           mode: selected.mode,
           workers: config.concurrency,
           config: "stryker.config.mts",
-          mutate: config.mutate,
+          mutate: target.mutate,
           testFiles: target.testFiles,
-          targetFingerprint: fingerprint.digest("hex"),
+          targetFingerprint,
+          fingerprintInputs: files,
           node: process.version,
           thresholds: config.thresholds,
           command: ["pnpm", ...command],
