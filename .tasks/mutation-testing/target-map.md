@@ -7,8 +7,8 @@ This document keeps the initial source-review map.
 This is a planning draft. Only `recording:resampler-mapping`,
 `recording:clock-sync`, `recording:audio-timeline`,
 `recording:system-audio-watchdog`, `recording:session-lifecycle`,
-`recording:main-session-lifecycle`, `recording:speaker-assignment` and
-`notes:pending-save` are registered in
+`recording:main-session-lifecycle`, `recording:speaker-assignment`,
+`notes:pending-save` and `recording:meet-speaker-evidence` are registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,
