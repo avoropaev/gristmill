@@ -131,6 +131,17 @@ export const targets = {
     directDependencies: ["src/helpers/i18nMain.ts"],
     artifactDirectory: "reports/mutation/transcription/export-formatting",
   },
+  "ai:settings-selection": {
+    mutate: ["src/config/settingsSelectors.ts"],
+    testFiles: ["test/helpers/settingsSelectors.test.ts"],
+    directDependencies: [
+      "src/config/inferenceScopes.ts",
+      "src/config/transcriptionCapabilities.ts",
+      "src/helpers/reasoningRouting.ts",
+      "src/config/bbAgentPreferences.ts",
+    ],
+    artifactDirectory: "reports/mutation/ai/settings-selection",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
