@@ -110,6 +110,12 @@ export const targets = {
     directDependencies: ["src/config/constants.mts"],
     artifactDirectory: "reports/mutation/platform/retry-policy",
   },
+  "ai:streaming-think-filter": {
+    mutate: ["src/services/ai/streamingThinkFilter.ts"],
+    testFiles: ["test/services/streamingThinkFilter.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/ai/streaming-think-filter",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));

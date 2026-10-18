@@ -10,7 +10,8 @@ This is a planning draft. Only `recording:resampler-mapping`,
 `recording:main-session-lifecycle`, `recording:speaker-assignment`,
 `notes:pending-save`, `recording:meet-speaker-evidence`,
 `transcription:routing`, `transcription:timeout-policy`,
-`transcription:upload-cancellation` and `platform:retry-policy` are registered in
+`transcription:upload-cancellation`, `platform:retry-policy` and
+`ai:streaming-think-filter` are registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,

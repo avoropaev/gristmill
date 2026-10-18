@@ -40,6 +40,7 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["transcription:timeout-policy"]?.mutate, ["src/helpers/transcriptionTimeout.ts"]);
   assert.deepEqual(targets["transcription:upload-cancellation"]?.mutate, ["src/helpers/uploadCancelRegistry.ts"]);
   assert.deepEqual(targets["platform:retry-policy"]?.testFiles, ["test/helpers/apiRetryStrategy.test.ts", "test/helpers/fileRetryStrategy.test.ts"]);
+  assert.deepEqual(targets["ai:streaming-think-filter"]?.mutate, ["src/services/ai/streamingThinkFilter.ts"]);
   assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
   assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
 });
