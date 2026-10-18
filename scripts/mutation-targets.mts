@@ -125,6 +125,12 @@ export const targets = {
     ],
     artifactDirectory: "reports/mutation/ai/llm-transcript",
   },
+  "transcription:export-formatting": {
+    mutate: ["src/helpers/transcriptFormatter.ts"],
+    testFiles: ["test/helpers/transcriptFormatter.test.ts"],
+    directDependencies: ["src/helpers/i18nMain.ts"],
+    artifactDirectory: "reports/mutation/transcription/export-formatting",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
