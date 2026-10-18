@@ -100,7 +100,8 @@
     "lint:fix": "oxlint . --fix",
     "lint:policy:test": "node --test tools/typescript-quality/verify.test.mjs tools/oxlint/verify-consumer.mts",
     "format:check": "oxfmt --check .",
-    "typecheck:lint-tools": "tsc -p tools/oxlint/tsconfig.json"
+    "typecheck:lint-tools": "tsc -p tools/oxlint/tsconfig.json",
+    "mutation": "node scripts/mutation.mts"
   },
   "keywords": [
     "speech-to-text",
@@ -124,6 +125,7 @@
     "@radix-ui/react-direction": "1.1.2",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@stryker-mutator/core": "10.0.0",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-virtual": "^3.13.2",
     "@tiptap/core": "3.31.3",

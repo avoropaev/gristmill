@@ -1,0 +1,17 @@
+**
+!package.json
+!pnpm-lock.yaml
+!.npmrc
+!stryker.config.mts
+!src/
+!src/**
+!scripts/
+!scripts/**
+!test/
+!test/**
+**/.env*
+**/*.pem
+**/*.key
+**/node_modules
+**/reports
+**/.stryker-tmp

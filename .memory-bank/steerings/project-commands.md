@@ -6,6 +6,11 @@ Run all commands from the repository root.
 
 ## Test selection
 
+Mutation testing is a separate manual command: `pnpm mutation --list`, then
+`pnpm mutation --target recording:resampler-mapping --mode dry-run|full`.
+Scope, validation lifecycle, limits and Cloud Run setup are in
+[mutation testing](mutation-testing.md). It does not run as part of `pnpm test`.
+
 | Command                                      | Selection                                                                                                         |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `pnpm test`                                  | Full suite, including compiler probes and native and GUI checks. A maximum of two ordinary files at the same time |
