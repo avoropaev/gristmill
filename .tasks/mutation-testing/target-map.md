@@ -12,8 +12,8 @@ This is a planning draft. Only `recording:resampler-mapping`,
 `transcription:routing`, `transcription:timeout-policy`,
 `transcription:upload-cancellation`, `platform:retry-policy`,
 `ai:streaming-think-filter`, `ai:llm-transcript`,
-`transcription:export-formatting`, `ai:settings-selection` and
-`notes:list-operations` are registered in
+`ai:settings-selection`, `notes:list-operations` and
+`calendar:availability` are registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,
