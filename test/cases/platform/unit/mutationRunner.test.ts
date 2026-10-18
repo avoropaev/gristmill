@@ -29,6 +29,7 @@ test("each registered target resolves independently with its own scope and the s
   }
   assert.deepEqual(targets["recording:resampler-mapping"]?.mutate, ["src/helpers/meetingResamplerMapping.ts"]);
   assert.deepEqual(targets["recording:clock-sync"]?.testFiles, ["test/cases/recording/unit/meetingClockSync.test.ts"]);
+  assert.deepEqual(targets["recording:audio-timeline"]?.mutate, ["src/helpers/meetingAudioTimeline.ts"]);
   assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
   assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
 });

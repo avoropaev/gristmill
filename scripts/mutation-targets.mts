@@ -32,6 +32,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/recording/clock-sync",
   },
+  "recording:audio-timeline": {
+    mutate: ["src/helpers/meetingAudioTimeline.ts"],
+    testFiles: ["test/helpers/meetingAudioTimeline.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/audio-timeline",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
