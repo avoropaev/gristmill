@@ -26,6 +26,12 @@ export const targets = {
     ],
     artifactDirectory: "reports/mutation/recording/resampler-mapping",
   },
+  "recording:clock-sync": {
+    mutate: ["src/helpers/meetingClockSync.ts"],
+    testFiles: ["test/cases/recording/unit/meetingClockSync.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/clock-sync",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
