@@ -116,6 +116,15 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/ai/streaming-think-filter",
   },
+  "ai:llm-transcript": {
+    mutate: ["src/utils/llmTranscript.ts"],
+    testFiles: ["test/utils/llmTranscript.test.ts"],
+    directDependencies: [
+      "src/contracts/meetingRecording.ts",
+      "src/utils/transcriptSpeakerState.ts",
+    ],
+    artifactDirectory: "reports/mutation/ai/llm-transcript",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
