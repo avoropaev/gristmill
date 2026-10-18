@@ -32,6 +32,7 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["recording:audio-timeline"]?.mutate, ["src/helpers/meetingAudioTimeline.ts"]);
   assert.deepEqual(targets["recording:system-audio-watchdog"]?.testFiles, ["test/helpers/meetingSystemAudioWatchdog.test.ts"]);
   assert.deepEqual(targets["recording:session-lifecycle"]?.mutate, ["src/helpers/meetingRecordingSession.ts"]);
+  assert.deepEqual(targets["recording:main-session-lifecycle"]?.mutate, ["src/helpers/meetingTranscriptionLifecycle.ts"]);
   assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
   assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
 });
