@@ -160,6 +160,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/platform/endpoint-policy",
   },
+  "platform:companion-protocol": {
+    mutate: ["src/helpers/companionFrames.ts", "src/contracts/companion.ts"],
+    testFiles: ["test/cases/platform/unit/companionProtocol.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/platform/companion-protocol",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
