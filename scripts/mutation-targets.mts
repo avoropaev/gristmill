@@ -74,6 +74,21 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/recording/meet-speaker-evidence",
   },
+  "transcription:routing": {
+    mutate: ["src/helpers/transcriptionRoute.ts"],
+    testFiles: [
+      "test/helpers/transcriptionRoute.test.ts",
+      "test/helpers/transcriptionRouteModelAgreement.test.ts",
+    ],
+    directDependencies: [
+      "src/config/constants.mts",
+      "src/config/transcriptionCapabilities.ts",
+      "src/utils/urlUtils.ts",
+      "src/helpers/selfHostedTranscription.ts",
+      "src/services/transcriptionBaseUrl.ts",
+    ],
+    artifactDirectory: "reports/mutation/transcription/routing",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
