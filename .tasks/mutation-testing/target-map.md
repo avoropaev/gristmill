@@ -5,8 +5,8 @@ The meta issue and GitHub milestones own task status and dependencies.
 This document keeps the initial source-review map.
 
 This is a planning draft. Only `recording:resampler-mapping`,
-`recording:clock-sync`, `recording:audio-timeline` and
-`recording:system-audio-watchdog` are registered in
+`recording:clock-sync`, `recording:audio-timeline`,
+`recording:system-audio-watchdog` and `recording:session-lifecycle` are registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,
