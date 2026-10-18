@@ -172,6 +172,16 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/platform/companion-coordinator",
   },
+  "recording:platform-speaker-matching": {
+    mutate: ["src/helpers/meetingPlatformMatcher.ts"],
+    testFiles: [
+      "test/cases/recording/unit/zoomSpeakerMatcher.test.ts",
+      "test/cases/recording/unit/soleRemoteSpeaker.test.ts",
+    ],
+    directDependencies: ["src/contracts/meetingRecording.ts"],
+    artifactDirectory: "reports/mutation/recording/platform-speaker-matching",
+    fullLimitMinutes: 45,
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));

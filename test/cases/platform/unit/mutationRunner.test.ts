@@ -49,6 +49,9 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["platform:endpoint-policy"]?.mutate, ["src/utils/urlUtils.ts"]);
   assert.deepEqual(targets["platform:companion-protocol"]?.mutate, ["src/helpers/companionFrames.ts", "src/contracts/companion.ts"]);
   assert.deepEqual(targets["platform:companion-coordinator"]?.mutate, ["src/helpers/companionCoordinator.ts"]);
+  assert.deepEqual(targets["recording:platform-speaker-matching"]?.mutate, ["src/helpers/meetingPlatformMatcher.ts"]);
+  assert.deepEqual(targets["recording:platform-speaker-matching"]?.testFiles, ["test/cases/recording/unit/zoomSpeakerMatcher.test.ts", "test/cases/recording/unit/soleRemoteSpeaker.test.ts"]);
+  assert.equal(targets["recording:platform-speaker-matching"]?.fullLimitMinutes, 45);
   assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
   assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
 });
