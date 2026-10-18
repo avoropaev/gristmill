@@ -89,6 +89,12 @@ export const targets = {
     ],
     artifactDirectory: "reports/mutation/transcription/routing",
   },
+  "transcription:timeout-policy": {
+    mutate: ["src/helpers/transcriptionTimeout.ts"],
+    testFiles: ["test/helpers/transcriptionTimeout.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/transcription/timeout-policy",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
