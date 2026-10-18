@@ -142,6 +142,12 @@ export const targets = {
     ],
     artifactDirectory: "reports/mutation/ai/settings-selection",
   },
+  "notes:list-operations": {
+    mutate: ["src/stores/noteListOps.ts"],
+    testFiles: ["test/helpers/noteListOps.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/notes/list-operations",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
