@@ -95,6 +95,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/transcription/timeout-policy",
   },
+  "transcription:upload-cancellation": {
+    mutate: ["src/helpers/uploadCancelRegistry.ts"],
+    testFiles: ["test/helpers/uploadCancelRegistry.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/transcription/upload-cancellation",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));

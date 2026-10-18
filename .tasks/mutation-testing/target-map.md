@@ -9,7 +9,8 @@ This is a planning draft. Only `recording:resampler-mapping`,
 `recording:system-audio-watchdog`, `recording:session-lifecycle`,
 `recording:main-session-lifecycle`, `recording:speaker-assignment`,
 `notes:pending-save`, `recording:meet-speaker-evidence`,
-`transcription:routing` and `transcription:timeout-policy` are registered in
+`transcription:routing`, `transcription:timeout-policy` and
+`transcription:upload-cancellation` are registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,

@@ -38,6 +38,7 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["recording:meet-speaker-evidence"]?.mutate, ["src/helpers/meetSpeakerEvidence.ts"]);
   assert.deepEqual(targets["transcription:routing"]?.testFiles, ["test/helpers/transcriptionRoute.test.ts", "test/helpers/transcriptionRouteModelAgreement.test.ts"]);
   assert.deepEqual(targets["transcription:timeout-policy"]?.mutate, ["src/helpers/transcriptionTimeout.ts"]);
+  assert.deepEqual(targets["transcription:upload-cancellation"]?.mutate, ["src/helpers/uploadCancelRegistry.ts"]);
   assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
   assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
 });
