@@ -154,6 +154,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/calendar/availability",
   },
+  "platform:endpoint-policy": {
+    mutate: ["src/utils/urlUtils.ts"],
+    testFiles: ["test/helpers/secureEndpoint.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/platform/endpoint-policy",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
