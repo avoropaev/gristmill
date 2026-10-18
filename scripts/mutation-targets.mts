@@ -38,6 +38,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/recording/audio-timeline",
   },
+  "recording:system-audio-watchdog": {
+    mutate: ["src/helpers/meetingSystemAudioWatchdog.ts"],
+    testFiles: ["test/helpers/meetingSystemAudioWatchdog.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/system-audio-watchdog",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
