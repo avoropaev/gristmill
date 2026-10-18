@@ -101,6 +101,15 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/transcription/upload-cancellation",
   },
+  "platform:retry-policy": {
+    mutate: ["src/utils/retry.ts"],
+    testFiles: [
+      "test/helpers/apiRetryStrategy.test.ts",
+      "test/helpers/fileRetryStrategy.test.ts",
+    ],
+    directDependencies: ["src/config/constants.mts"],
+    artifactDirectory: "reports/mutation/platform/retry-policy",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
