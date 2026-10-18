@@ -166,6 +166,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/platform/companion-protocol",
   },
+  "platform:companion-coordinator": {
+    mutate: ["src/helpers/companionCoordinator.ts"],
+    testFiles: ["test/cases/platform/unit/companionCoordinator.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/platform/companion-coordinator",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));

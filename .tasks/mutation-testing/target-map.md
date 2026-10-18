@@ -13,7 +13,8 @@ This is a planning draft. Only `recording:resampler-mapping`,
 `transcription:upload-cancellation`, `platform:retry-policy`,
 `ai:streaming-think-filter`, `ai:llm-transcript`,
 `ai:settings-selection`, `notes:list-operations`, `calendar:availability`,
-`platform:endpoint-policy` and `platform:companion-protocol` are registered in
+`platform:endpoint-policy`, `platform:companion-protocol` and
+`platform:companion-coordinator` are registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,
