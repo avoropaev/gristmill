@@ -50,6 +50,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/recording/session-lifecycle",
   },
+  "recording:main-session-lifecycle": {
+    mutate: ["src/helpers/meetingTranscriptionLifecycle.ts"],
+    testFiles: ["test/helpers/meetingTranscriptionLifecycle.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/main-session-lifecycle",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
