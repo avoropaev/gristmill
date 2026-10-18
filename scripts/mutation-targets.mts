@@ -56,6 +56,12 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/recording/main-session-lifecycle",
   },
+  "recording:speaker-assignment": {
+    mutate: ["src/helpers/speakerAssignmentPolicy.ts"],
+    testFiles: ["test/helpers/speakerAssignmentPolicy.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/speaker-assignment",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
