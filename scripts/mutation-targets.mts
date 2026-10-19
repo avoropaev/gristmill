@@ -183,6 +183,12 @@ export const targets = {
     directDependencies: ["src/contracts/meetingRecording.ts"],
     artifactDirectory: "reports/mutation/recording/audio-alignment",
   },
+  "recording:capture-write-queue": {
+    mutate: ["src/helpers/meetingCaptureWriteQueue.ts"],
+    testFiles: ["test/cases/recording/unit/meetingCaptureBackpressure.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/capture-write-queue",
+  },
   "recording:platform-speaker-matching": {
     mutate: ["src/helpers/meetingPlatformMatcher.ts"],
     testFiles: [

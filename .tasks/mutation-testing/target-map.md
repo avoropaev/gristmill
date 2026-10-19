@@ -14,8 +14,9 @@ This is a planning draft. Only `recording:resampler-mapping`,
 `ai:streaming-think-filter`, `ai:llm-transcript`,
 `ai:settings-selection`, `notes:list-operations`, `calendar:availability`,
 `platform:endpoint-policy`, `platform:companion-protocol`,
-`platform:companion-coordinator`, `recording:platform-speaker-matching`
-and `recording:audio-alignment` are registered in
+`platform:companion-coordinator`, `recording:platform-speaker-matching`,
+`recording:audio-alignment` and `recording:capture-write-queue` are
+registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,
