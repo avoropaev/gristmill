@@ -10,5 +10,6 @@ RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild better-sqlit
 COPY src ./src
 COPY scripts ./scripts
 COPY test ./test
+COPY extension ./extension
 COPY stryker.config.mts ./
 ENTRYPOINT ["sh", "/repo/scripts/mutation-cloud/entrypoint.sh"]
