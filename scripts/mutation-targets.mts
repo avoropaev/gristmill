@@ -195,6 +195,12 @@ export const targets = {
     directDependencies: ["src/contracts/meetingRecording.ts", "src/contracts/noteRead.ts", "src/helpers/meetingAudioMixer.ts"],
     artifactDirectory: "reports/mutation/notes/transcript-reader",
   },
+  "recording:retention-settings": {
+    mutate: ["src/helpers/retentionSettings.ts"],
+    testFiles: ["test/helpers/retentionSettings.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/retention-settings",
+  },
   "recording:platform-speaker-matching": {
     mutate: ["src/helpers/meetingPlatformMatcher.ts"],
     testFiles: [

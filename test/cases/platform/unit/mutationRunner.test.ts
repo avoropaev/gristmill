@@ -64,6 +64,8 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["recording:capture-write-queue"]?.testFiles, ["test/cases/recording/unit/meetingCaptureBackpressure.test.ts"]);
   assert.deepEqual(targets["notes:transcript-reader"]?.mutate, ["src/helpers/noteTranscriptReader.ts"]);
   assert.deepEqual(targets["notes:transcript-reader"]?.testFiles, ["test/helpers/noteTranscriptReader.test.ts"]);
+  assert.deepEqual(targets["recording:retention-settings"]?.mutate, ["src/helpers/retentionSettings.ts"]);
+  assert.deepEqual(targets["recording:retention-settings"]?.testFiles, ["test/helpers/retentionSettings.test.ts"]);
   assert.deepEqual(targets["recording:platform-speaker-matching"]?.mutate, ["src/helpers/meetingPlatformMatcher.ts"]);
   assert.deepEqual(targets["recording:platform-speaker-matching"]?.testFiles, ["test/cases/recording/unit/zoomSpeakerMatcher.test.ts", "test/cases/recording/unit/soleRemoteSpeaker.test.ts"]);
   assert.equal(targets["recording:platform-speaker-matching"]?.fullLimitMinutes, 45);
