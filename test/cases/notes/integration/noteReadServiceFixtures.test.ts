@@ -85,7 +85,7 @@ function seedSnapshot(f: ReturnType<typeof fixture>, overrides: Record<string, u
   f.db.setMeetingRunLlmSourceSnapshot(f.run.id, JSON.stringify({ ...base, ...overrides }));
 }
 
-test("show view: email matching is case-insensitive and stored-name precedence is learned > people > display (B9)", (t) => {
+test("show view: stored-name precedence is learned > people > display (B9)", (t) => {
   const db = createDb(t)!;
   const reader = new NoteReadService(db, { readRunArtifact: () => null } as never);
   const note = db.saveNote("Priority", "", "meeting").note!;
@@ -105,7 +105,7 @@ test("show view: email matching is case-insensitive and stored-name precedence i
   });
 
   const view = reader.show(db.getNote(note.id)!);
-  assert.equal(view.participants.length, 1, "case-insensitive email match prevents a duplicate participant");
+  assert.equal(view.participants.length, 1);
   assert.equal(view.participants[0].name, "Stored Learned");
   assert.deepEqual(view.participants[0].stored_names, {
     display_name: "Stored Display",
@@ -134,6 +134,41 @@ test("show view: a spoken speaker without a stored contact is appended with own 
   assert.equal(view.participants.filter((person) => person.email === "other@example.org").length, 1);
 });
 
+test("show view: a spoken speaker whose email differs only by case does not duplicate the participant (B9)", (t) => {
+  const f = fixture(t);
+  // The projection arm stores no speaker email, so only a run transcript can
+  // carry one; it comes from the speaker correction's participant email. The
+  // correction also rewrites the stored projection, which must be valid JSON.
+  f.db.updateNote(f.note.id, {
+    participants: JSON.stringify([{ email: "Ann@Example.org", displayName: "Ann Example" }]),
+    transcript: JSON.stringify([{ text: "source transcript", speaker: "speaker_0" }]),
+  });
+  assert.equal(
+    f.db.setMeetingRunSpeakerCorrection(f.run.id, "speaker_0", null, "Ann Example", "user", "ann@example.org").success,
+    true
+  );
+
+  const view = f.reader.show(f.db.getNote(f.note.id)!);
+  assert.equal(view.participants.length, 1, "a case-differing email must not append a duplicate participant");
+  assert.equal(view.participants[0].email, "Ann@Example.org");
+});
+
+test("show view: a spoken speaker with a different email is appended (B9)", (t) => {
+  const f = fixture(t);
+  f.db.updateNote(f.note.id, {
+    participants: JSON.stringify([{ email: "other@example.org", displayName: "Other" }]),
+    transcript: JSON.stringify([{ text: "source transcript", speaker: "speaker_0" }]),
+  });
+  assert.equal(
+    f.db.setMeetingRunSpeakerCorrection(f.run.id, "speaker_0", null, "Ann Example", "user", "ann@example.org").success,
+    true
+  );
+
+  const view = f.reader.show(f.db.getNote(f.note.id)!);
+  assert.equal(view.participants.length, 2);
+  assert.equal(view.participants.filter((person) => person.email === "ann@example.org").length, 1);
+});
+
 test("freshness reasons: participants drift, correction revision drift and config drift each surface verbatim (B8)", (t) => {
   const f = fixture(t);
   f.db.setMeetingProcessingRunState(f.run.id, { status: "running", stage: "summary" });
@@ -143,7 +178,7 @@ test("freshness reasons: participants drift, correction revision drift and confi
 
   const drifted = read();
   assert.equal(drifted.summaryFreshness.status, "stale");
-  assert.ok(drifted.summaryFreshness.reasons.includes("participants-changed"));
+  assert.deepEqual(drifted.summaryFreshness.reasons, ["participants-changed"]);
 
   // Correction revision drift (snapshot says 0, authoritative revision advances).
   // The correction apply walks the note's stored transcript JSON, so seed valid JSON.
@@ -160,7 +195,8 @@ test("freshness reasons: participants drift, correction revision drift and confi
   );
   const revoked = corrections.reader.readOutput({ scope: "run", noteId: corrections.note.id, runId: corrections.run.id });
   assert.equal(revoked.summaryFreshness.status, "stale");
-  assert.ok(revoked.summaryFreshness.reasons.includes("speaker-corrections-changed"));
+  // Both drift checks push this reason; the Set keeps one copy.
+  assert.deepEqual(revoked.summaryFreshness.reasons, ["speaker-corrections-changed"]);
 
   // Summary config drift (snapshot promptModel vs the run's config.summary).
   const configured = fixture(t);
@@ -168,7 +204,7 @@ test("freshness reasons: participants drift, correction revision drift and confi
   seedSnapshot(configured, { promptModel: { actionId: "notes.actions.builtin.detailedNotes", instruction: "Different", reasoningMode: "providers", provider: "openai" } });
   const configDrift = configured.reader.readOutput({ scope: "run", noteId: configured.note.id, runId: configured.run.id });
   assert.equal(configDrift.summaryFreshness.status, "stale");
-  assert.ok(configDrift.summaryFreshness.reasons.includes("summary-config-changed"));
+  assert.deepEqual(configDrift.summaryFreshness.reasons, ["summary-config-changed"]);
 });
 
 test("freshness source resolution: snapshot bound to a foreign run reports generation-metadata-unavailable (B7/B8)", (t) => {
@@ -178,7 +214,7 @@ test("freshness source resolution: snapshot bound to a foreign run reports gener
   f.db.setMeetingRunLlmSourceSnapshot(f.run.id, JSON.stringify(foreign));
   const output = f.reader.readOutput({ scope: "run", noteId: f.note.id, runId: f.run.id });
   assert.equal(output.summaryFreshness.status, "unknown");
-  assert.ok(output.summaryFreshness.reasons.includes("generation-metadata-unavailable"));
+  assert.deepEqual(output.summaryFreshness.reasons, ["generation-metadata-unavailable"]);
 });
 
 test("freshness digest: manual-notes change surfaces the manual-notes-changed reason verbatim (B8/B7 digest)", (t) => {
@@ -188,5 +224,5 @@ test("freshness digest: manual-notes change surfaces the manual-notes-changed re
   f.db.updateNote(f.note.id, { content: "changed content" });
   const output = f.reader.readOutput({ scope: "run", noteId: f.note.id, runId: f.run.id });
   assert.equal(output.summaryFreshness.status, "stale");
-  assert.ok(output.summaryFreshness.reasons.includes("manual-notes-changed"));
+  assert.deepEqual(output.summaryFreshness.reasons, ["manual-notes-changed"]);
 });
