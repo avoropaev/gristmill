@@ -69,6 +69,8 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["recording:platform-speaker-matching"]?.mutate, ["src/helpers/meetingPlatformMatcher.ts"]);
   assert.deepEqual(targets["recording:platform-speaker-matching"]?.testFiles, ["test/cases/recording/unit/zoomSpeakerMatcher.test.ts", "test/cases/recording/unit/soleRemoteSpeaker.test.ts"]);
   assert.equal(targets["recording:platform-speaker-matching"]?.fullLimitMinutes, 45);
+  assert.deepEqual(targets["notes:read-service"]?.mutate, ["src/helpers/noteReadService.ts"]);
+  assert.deepEqual(targets["notes:read-service"]?.testFiles, ["test/helpers/noteReadService.test.ts", "test/cases/notes/integration/noteOutputReader.test.ts"]);
   assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
   assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
 });

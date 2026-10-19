@@ -16,8 +16,8 @@ This is a planning draft. Only `recording:resampler-mapping`,
 `platform:endpoint-policy`, `platform:companion-protocol`,
 `platform:companion-coordinator`, `recording:platform-speaker-matching`,
 `recording:audio-alignment`, `recording:capture-write-queue`,
-`notes:transcript-reader` and `recording:retention-settings` are
-registered in
+`notes:transcript-reader`, `recording:retention-settings` and
+`notes:read-service` are registered in
 the explicit allowlist in [scripts/mutation-targets.mts](../../scripts/mutation-targets.mts).
 Other IDs below are proposed
 contracts, not accepted CLI arguments. This map does not enable new targets,
