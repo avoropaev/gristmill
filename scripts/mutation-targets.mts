@@ -179,6 +179,7 @@ export const targets = {
     testFiles: [
       "test/cases/recording/unit/meetingResamplerMapping.test.ts",
       "test/cases/recording/integration/meetingAlignmentPersistence.test.ts",
+      "test/cases/recording/unit/meetingAudioAlignment.test.ts",
     ],
     directDependencies: ["src/contracts/meetingRecording.ts"],
     artifactDirectory: "reports/mutation/recording/audio-alignment",
