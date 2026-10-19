@@ -2,6 +2,13 @@ const test: typeof import("node:test") = require("node:test");
 
 const assert: typeof import("node:assert/strict") = require("node:assert/strict");
 
+// The reader's transitive chain (meetingAudioMixer -> ffmpegUtils/binaryResolver)
+// imports debugLogger, which loads electron at module load; under plain node and
+// the mutation image the loader hands it this stub.
+const { installElectronStub }: typeof import("./harness/electronStub.ts") = require("./harness/electronStub.ts");
+
+installElectronStub();
+
 const {
   readNoteTranscript,
   readNoteTranscriptOutput,
