@@ -217,6 +217,7 @@ export const targets = {
     testFiles: [
       "test/helpers/noteReadService.test.ts",
       "test/cases/notes/integration/noteOutputReader.test.ts",
+      "test/cases/notes/integration/noteReadServiceFixtures.test.ts",
     ],
     directDependencies: ["src/contracts/noteOutput.ts", "src/contracts/meetingRecording.ts", "src/helpers/meetingRunReader.ts", "src/helpers/meetingPromptMaterial.ts", "src/helpers/database.ts"],
     artifactDirectory: "reports/mutation/notes/read-service",
