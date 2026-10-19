@@ -211,6 +211,15 @@ export const targets = {
     artifactDirectory: "reports/mutation/recording/platform-speaker-matching",
     fullLimitMinutes: 45,
   },
+  "notes:read-service": {
+    mutate: ["src/helpers/noteReadService.ts"],
+    testFiles: [
+      "test/helpers/noteReadService.test.ts",
+      "test/cases/notes/integration/noteOutputReader.test.ts",
+    ],
+    directDependencies: ["src/contracts/noteOutput.ts", "src/contracts/meetingRecording.ts", "src/helpers/meetingRunReader.ts", "src/helpers/meetingPromptMaterial.ts", "src/helpers/database.ts"],
+    artifactDirectory: "reports/mutation/notes/read-service",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
