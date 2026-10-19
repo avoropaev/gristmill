@@ -14,6 +14,8 @@ type TargetScope = {
   testFiles: string[];
   directDependencies: string[];
   artifactDirectory: string;
+  // Owner exception (issue #346 item 1): the only per-target full-limit override.
+  fullLimitMinutes?: number;
 };
 
 export const targets = {
@@ -172,6 +174,16 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/platform/companion-coordinator",
   },
+  "recording:platform-speaker-matching": {
+    mutate: ["src/helpers/meetingPlatformMatcher.ts"],
+    testFiles: [
+      "test/cases/recording/unit/zoomSpeakerMatcher.test.ts",
+      "test/cases/recording/unit/soleRemoteSpeaker.test.ts",
+    ],
+    directDependencies: ["src/contracts/meetingRecording.ts"],
+    artifactDirectory: "reports/mutation/recording/platform-speaker-matching",
+    fullLimitMinutes: 45,
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
@@ -182,7 +194,9 @@ export function targetIds(): string[] {
 
 // Resolve one registered target and validate its scope before any Stryker work.
 export function resolveTarget(id: string) {
-  const scope = Object.entries(targets).find(([candidate]) => candidate === id)?.[1];
+  const scope: TargetScope | undefined = Object.entries(targets).find(
+    ([candidate]) => candidate === id
+  )?.[1];
 
   if (!scope)
     throw new Error(
@@ -193,10 +207,19 @@ export function resolveTarget(id: string) {
     assertSafePath(file, { exists: true });
   assertSafePath(scope.artifactDirectory, { under: "reports/mutation" });
 
+  if (
+    scope.fullLimitMinutes !== undefined &&
+    (!Number.isInteger(scope.fullLimitMinutes) || scope.fullLimitMinutes <= 0)
+  )
+    throw new Error(`Invalid mutation full limit for ${id}: ${scope.fullLimitMinutes}`);
+
   return {
     name: id,
     ...scope,
-    timeoutMs: { "dry-run": dryRunTimeoutMs, full: fullTimeoutMs },
+    timeoutMs: {
+      "dry-run": dryRunTimeoutMs,
+      full: scope.fullLimitMinutes ? scope.fullLimitMinutes * 60_000 : fullTimeoutMs,
+    },
   };
 }
 

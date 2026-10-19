@@ -22,7 +22,16 @@ test("each registered target resolves independently with its own scope and the s
     assert.equal(resolved.name, id);
     assert.deepEqual(resolved.mutate, scope.mutate);
     assert.deepEqual(resolved.testFiles, scope.testFiles);
-    assert.deepEqual(resolved.timeoutMs, { "dry-run": 300_000, full: 1_200_000 });
+    for (const key of Object.keys(scope))
+      assert.equal(
+        ["mutate", "testFiles", "directDependencies", "artifactDirectory", "fullLimitMinutes"].includes(key),
+        true,
+        `unknown scope field on ${id}: ${key}`
+      );
+    assert.deepEqual(resolved.timeoutMs, {
+      "dry-run": 300_000,
+      full: id === "recording:platform-speaker-matching" ? 2_700_000 : 1_200_000,
+    });
     assert.equal(resolved.artifactDirectory.startsWith("reports/mutation/"), true);
     assert.equal(artifactDirectories.has(resolved.artifactDirectory), false);
     artifactDirectories.add(resolved.artifactDirectory);
@@ -49,6 +58,9 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["platform:endpoint-policy"]?.mutate, ["src/utils/urlUtils.ts"]);
   assert.deepEqual(targets["platform:companion-protocol"]?.mutate, ["src/helpers/companionFrames.ts", "src/contracts/companion.ts"]);
   assert.deepEqual(targets["platform:companion-coordinator"]?.mutate, ["src/helpers/companionCoordinator.ts"]);
+  assert.deepEqual(targets["recording:platform-speaker-matching"]?.mutate, ["src/helpers/meetingPlatformMatcher.ts"]);
+  assert.deepEqual(targets["recording:platform-speaker-matching"]?.testFiles, ["test/cases/recording/unit/zoomSpeakerMatcher.test.ts", "test/cases/recording/unit/soleRemoteSpeaker.test.ts"]);
+  assert.equal(targets["recording:platform-speaker-matching"]?.fullLimitMinutes, 45);
   assert.throws(() => resolveTarget("recording:no-such-target"), /Unknown mutation target/);
   assert.throws(() => resolveTarget("../../secrets"), /Unknown mutation target/);
 });
