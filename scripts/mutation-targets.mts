@@ -85,7 +85,8 @@ export const targets = {
     directDependencies: [
       "src/config/constants.mts",
       "src/config/transcriptionCapabilities.ts",
-      "src/utils/urlUtils.ts",
+      "src/utils/endpointPolicy.ts",
+      "src/utils/azureOpenAI.ts",
       "src/helpers/selfHostedTranscription.ts",
       "src/services/transcriptionBaseUrl.ts",
     ],
@@ -157,7 +158,7 @@ export const targets = {
     artifactDirectory: "reports/mutation/calendar/availability",
   },
   "platform:endpoint-policy": {
-    mutate: ["src/utils/urlUtils.ts"],
+    mutate: ["src/utils/endpointPolicy.ts"],
     testFiles: ["test/helpers/secureEndpoint.test.ts"],
     directDependencies: [],
     artifactDirectory: "reports/mutation/platform/endpoint-policy",

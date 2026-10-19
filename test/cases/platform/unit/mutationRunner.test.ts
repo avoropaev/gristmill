@@ -55,7 +55,7 @@ test("each registered target resolves independently with its own scope and the s
   assert.deepEqual(targets["ai:settings-selection"]?.mutate, ["src/config/settingsSelectors.ts"]);
   assert.deepEqual(targets["notes:list-operations"]?.mutate, ["src/stores/noteListOps.ts"]);
   assert.deepEqual(targets["calendar:availability"]?.mutate, ["src/helpers/calendarAvailability.ts"]);
-  assert.deepEqual(targets["platform:endpoint-policy"]?.mutate, ["src/utils/urlUtils.ts"]);
+  assert.deepEqual(targets["platform:endpoint-policy"]?.mutate, ["src/utils/endpointPolicy.ts"]);
   assert.deepEqual(targets["platform:companion-protocol"]?.mutate, ["src/helpers/companionFrames.ts", "src/contracts/companion.ts"]);
   assert.deepEqual(targets["platform:companion-coordinator"]?.mutate, ["src/helpers/companionCoordinator.ts"]);
   assert.deepEqual(targets["recording:audio-alignment"]?.mutate, ["src/helpers/meetingAudioAlignment.ts"]);
