@@ -6,7 +6,7 @@ RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 ENV ELECTRON_SKIP_BINARY_DOWNLOAD=1
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml .npmrc ./
-RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild better-sqlite3
+RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild better-sqlite3 ffmpeg-static
 COPY src ./src
 COPY scripts ./scripts
 COPY test ./test
