@@ -174,6 +174,15 @@ export const targets = {
     directDependencies: [],
     artifactDirectory: "reports/mutation/platform/companion-coordinator",
   },
+  "recording:audio-alignment": {
+    mutate: ["src/helpers/meetingAudioAlignment.ts"],
+    testFiles: [
+      "test/cases/recording/unit/meetingResamplerMapping.test.ts",
+      "test/cases/recording/integration/meetingAlignmentPersistence.test.ts",
+    ],
+    directDependencies: ["src/contracts/meetingRecording.ts"],
+    artifactDirectory: "reports/mutation/recording/audio-alignment",
+  },
   "recording:platform-speaker-matching": {
     mutate: ["src/helpers/meetingPlatformMatcher.ts"],
     testFiles: [
