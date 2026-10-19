@@ -9,6 +9,8 @@
 !scripts/**
 !test/
 !test/**
+!extension/
+!extension/**
 **/.env*
 **/*.pem
 **/*.key
