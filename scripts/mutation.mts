@@ -111,6 +111,14 @@ export function fingerprintDigest(inputs: Array<{ path: string; content: string 
   return fingerprint.digest("hex");
 }
 
+function utcOffsetLabel(date: Date) {
+  const minutes = -date.getTimezoneOffset();
+  const sign = minutes < 0 ? "-" : "+";
+  const abs = Math.abs(minutes);
+
+  return `${sign}${String(Math.floor(abs / 60)).padStart(2, "0")}:${String(abs % 60).padStart(2, "0")}`;
+}
+
 async function main() {
   const selected = parseArguments(process.argv.slice(2));
 
@@ -241,6 +249,8 @@ async function main() {
           targetFingerprint,
           fingerprintInputs: files,
           node: process.version,
+          tz: `${Intl.DateTimeFormat().resolvedOptions().timeZone} UTC${utcOffsetLabel(finishedAt)}`,
+          locale: process.env.LC_ALL ?? process.env.LANG ?? null,
           thresholds: config.thresholds,
           command: ["pnpm", ...command],
           timings: {
