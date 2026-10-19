@@ -223,6 +223,12 @@ export const targets = {
     directDependencies: ["src/contracts/noteOutput.ts", "src/contracts/meetingRecording.ts", "src/helpers/meetingRunReader.ts", "src/helpers/meetingPromptMaterial.ts", "src/helpers/database.ts"],
     artifactDirectory: "reports/mutation/notes/read-service",
   },
+  "recording:processing-retry-policy": {
+    mutate: ["src/helpers/meetingProcessingRetry.ts"],
+    testFiles: ["test/cases/recording/unit/meetingProcessingRetry.test.ts"],
+    directDependencies: [],
+    artifactDirectory: "reports/mutation/recording/processing-retry-policy",
+  },
 } satisfies Record<string, TargetScope>;
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
