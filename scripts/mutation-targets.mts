@@ -194,7 +194,7 @@ export const targets = {
   "notes:transcript-reader": {
     mutate: ["src/helpers/noteTranscriptReader.ts"],
     testFiles: ["test/helpers/noteTranscriptReader.test.ts"],
-    directDependencies: ["src/contracts/meetingRecording.ts", "src/contracts/noteRead.ts", "src/helpers/meetingAudioMixer.ts"],
+    directDependencies: ["src/contracts/meetingRecording.ts", "src/contracts/noteRead.ts", "src/helpers/meetingAudioParts.ts", "src/helpers/meetingAudioAlignment.ts"],
     artifactDirectory: "reports/mutation/notes/transcript-reader",
   },
   "recording:retention-settings": {
