@@ -12,6 +12,7 @@
       "test/helpers/debugLoggerConsolePolicy.test.ts",
       "test/helpers/downloadUtils.test.ts",
       "test/helpers/extractArchive.test.ts",
+      "test/helpers/meetingCaptureWriteQueue.test.ts",
       "test/helpers/sidecarPidFile.test.ts",
       "test/helpers/translationHistory.test.ts",
       "test/scripts/downloadSherpaMacos.test.ts",
