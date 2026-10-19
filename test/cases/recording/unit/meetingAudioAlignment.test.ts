@@ -74,18 +74,37 @@ test("fragment gate: fragments at the 6000-frame calibration bound and below are
   assert.equal(isUncalibratableEpochFragment(withSegments), false);
 });
 
-test("freshness window edges: equality passes, one ns past the sampled bounds rejects", () => {
+test("freshness window edges: equality passes, ±5 s boundaries diverge, one ns past rejects", () => {
   // freshness == sampledSourceEndNs passes (>= edge).
   const equal = epoch({ alignmentSegments: [segment()] });
   assert.equal(alignedAudioRanges(equal).length, 1);
 
-  // freshness 1 ns past sampledSourceEndNs + 5 s breaks the freshness-age link.
+  // Exact +5 s boundary (freshness = sampledSourceEndNs + 5_000_000_000):
+  // the >= freshness link passes at equality - real and <= mutant agree here.
+  const atFiveSeconds = epoch({
+    alignmentSegments: [
+      segment({ freshnessSourceNs: "6000000000" }),
+    ],
+  });
+  assert.equal(alignedAudioRanges(atFiveSeconds).length, 1);
+
+  // One ns past the age window (freshness > sampledEnd + 5 s) breaks the
+  // freshness-age link.
   const stale = epoch({
     alignmentSegments: [
       segment({ freshnessSourceNs: "6000000001" }),
     ],
   });
   assert.throws(() => alignedAudioRanges(stale), /audio-alignment-unavailable/);
+
+  // freshness BELOW sampledSourceEndNs breaks the freshness link in isolation
+  // (real rejects; the stale fixture above keeps its D-reference valid).
+  const belowWindow = epoch({
+    alignmentSegments: [
+      segment({ freshnessSourceNs: "999999999" }),
+    ],
+  });
+  assert.throws(() => alignedAudioRanges(belowWindow), /audio-alignment-unavailable/);
 
   // sourceStartNs below sampledSourceStartNs - 5 s breaks the start-window link.
   const earlyStart = epoch({
@@ -102,6 +121,29 @@ test("freshness window edges: equality passes, one ns past the sampled bounds re
     ],
   });
   assert.throws(() => alignedAudioRanges(lateEnd), /audio-alignment-unavailable/);
+});
+
+test("uncertainty boundary: 600 passes per link, 601 on either side rejects the segment", () => {
+  const atCap = epoch({
+    alignmentSegments: [
+      segment({ uncertaintyStartFrames: 600, uncertaintyEndFrames: 600 }),
+    ],
+  });
+  assert.equal(alignedAudioRanges(atCap).length, 1);
+
+  const startPast = epoch({
+    alignmentSegments: [
+      segment({ uncertaintyStartFrames: 601 }),
+    ],
+  });
+  assert.throws(() => alignedAudioRanges(startPast), /audio-alignment-unavailable/);
+
+  const endPast = epoch({
+    alignmentSegments: [
+      segment({ uncertaintyEndFrames: 601 }),
+    ],
+  });
+  assert.throws(() => alignedAudioRanges(endPast), /audio-alignment-unavailable/);
 });
 
 test("mixed sourceGeneration: segments from another generation are ignored for coverage", () => {
