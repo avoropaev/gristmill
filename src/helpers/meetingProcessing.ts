@@ -1,4 +1,9 @@
 import { readMeetingRunOutput } from "./meetingRunReader.js";
+import {
+  AUTO_RETRY_LIMIT,
+  MeetingProcessingFailure,
+  decideRetry,
+} from "./meetingProcessingRetry.js";
 import { isRegenerableNoteTitle } from "./regenerableNoteTitle.js";
 import { TRANSLATIONS_BY_LOCALE } from "../locales/translations.js";
 import { formatMeetingMaterial, parseMeetingParticipants } from "./meetingPromptMaterial.js";
@@ -78,12 +83,6 @@ import {
 // receives unknown JSON and immediately zod-parses it with its request schema
 // (override: no-unknown-parameters / no-unknown-returns). Catch handlers keep
 // `unknown` errors by language design.
-const AUTO_RETRY_LIMIT = 3;
-
-const RETRY_BASE_SECONDS = 5;
-
-const RETRY_MAX_SECONDS = 300;
-
 const GEMINI_MAX_SECONDS = 30 * 60;
 
 export interface MeetingProcessingDatabase {
@@ -2267,36 +2266,39 @@ export class MeetingProcessingWorker {
 
     if (!run || run.status !== "running") return;
 
-    const failure = error instanceof MeetingProcessingFailure ? error : failureFromUnknown(error);
+    const decision = decideRetry({
+      error,
+      retryCount: run.retryCount,
+      isCapturing: () => this.isCapturing(),
+      now: () => this.now().getTime(),
+    });
 
-    if (
-      failure.status === "cancelled" ||
-      (error instanceof Error && error.name === "AbortError" && this.isCapturing())
-    ) {
+    if (decision.action === "pause") {
       this.pause(run, stage);
 
       return;
     }
 
-    if (failure.status === "blocked") {
-      this.setState(run.id, stage, "blocked", failure.code, null);
+    if (decision.action === "blocked") {
+      this.setState(run.id, stage, "blocked", decision.code, null);
 
       return;
     }
 
-    if (isTransientFailure(failure)) {
-      const retryCount = run.retryCount + 1;
+    if (decision.action === "retry") {
+      this.setState(
+        run.id,
+        stage,
+        "pending",
+        decision.code,
+        decision.retryAt,
+        decision.retryCount
+      );
 
-      if (retryCount <= AUTO_RETRY_LIMIT) {
-        const delaySeconds = Math.min(RETRY_MAX_SECONDS, RETRY_BASE_SECONDS * 2 ** run.retryCount);
-        const retryAt = new Date(this.now().getTime() + delaySeconds * 1000).toISOString();
-        this.setState(run.id, stage, "pending", failure.code, retryAt, retryCount);
-
-        return;
-      }
+      return;
     }
 
-    this.setState(run.id, stage, "failed", failure.code, null, run.retryCount);
+    this.setState(run.id, stage, "failed", decision.code, null, run.retryCount);
   }
 
   private pause(run: MeetingProcessingRunDto, stage: MeetingProcessingRunDto["stage"]): void {
@@ -3105,16 +3107,6 @@ export function normalizeProviderResponse(
   return parseGeminiFileResponse(geminiInteractionSchema.parse(raw), diarize);
 }
 
-class MeetingProcessingFailure extends Error {
-  constructor(
-    readonly code: string,
-    readonly status: "blocked" | "failed" | "cancelled",
-    message?: string
-  ) {
-    super(message ?? code);
-  }
-}
-
 function providerModel(
   model: string | undefined,
   provider: "deepgram" | "elevenlabs" | "gemini" | "openai"
@@ -3278,65 +3270,6 @@ function timelineDuration(
   epochs: ReturnType<MeetingProcessingDatabase["listMeetingRecordingEpochs"]>
 ): number {
   return meetingTimelineFrameCount(recording, epochs) / 24_000;
-}
-
-function isTransientFailure(error: MeetingProcessingFailure): boolean {
-  return (
-    error.code === "PROVIDER_RATE_LIMITED" ||
-    error.code === "TRANSCRIPTION_TRANSPORT_ERROR" ||
-    error.code === "TRANSIENT_NETWORK_ERROR" ||
-    /Gemini API error 5\d\d/.test(error.message)
-  );
-}
-
-function failureFromUnknown(value: unknown): MeetingProcessingFailure {
-  const error = value instanceof Error ? value : new Error(String(value));
-  // SAFETY: providers attach optional code/status fields to plain Error
-  // objects; every access below tolerates their absence.
-  const detail = error as Error & { code?: string; status?: number; statusCode?: number };
-
-  if (error.name === "AbortError") {
-    return new MeetingProcessingFailure("processing-cancelled", "cancelled", error.message);
-  }
-
-  const status = detail.status ?? detail.statusCode;
-
-  if (status === 429)
-    return new MeetingProcessingFailure("PROVIDER_RATE_LIMITED", "failed", error.message);
-
-  if ((status !== undefined && status >= 500) || error instanceof TypeError) {
-    return new MeetingProcessingFailure("TRANSIENT_NETWORK_ERROR", "failed", error.message);
-  }
-
-  const code = detail.code || "processing-error";
-
-  if (
-    [
-      "api-key-missing",
-      "invalid-key",
-      "INVALID_KEY",
-      "API_KEY_MISSING",
-      "reasoning-model-missing",
-      "reasoning-endpoint-missing",
-      "reasoning-endpoint-invalid",
-      "reasoning-provider-missing",
-      "unsupported-reasoning-provider",
-      "unsupported-enterprise-reasoning-route",
-      "enterprise-reasoning-unavailable",
-      "SELF_HOSTED_ENDPOINT_INVALID",
-      "DIARIZATION_MODEL_MISSING",
-      "MODEL_NOT_DOWNLOADED",
-      "MODEL_NOT_FOUND",
-      "LLAMASERVER_NOT_FOUND",
-      "LOCAL_SERVER_UNAVAILABLE",
-      "bb-not-installed",
-      "bb-project-mismatch",
-    ].includes(code)
-  ) {
-    return new MeetingProcessingFailure(code, "blocked", error.message);
-  }
-
-  return new MeetingProcessingFailure(code, "failed", error.message);
 }
 
 function participantCandidates(value: string | null): ReturnType<typeof parseMeetingParticipants> {
