@@ -1,7 +1,7 @@
 # Script inventory and execution
 
 Use Node 24 or later and pnpm 10.19.0 from the repository root.
-The toolchain decision is [ADR-0005](../adr/0005-typescript-toolchain.md).
+The toolchain decisions are [ADR-0005](../adr/0005-typescript-toolchain.md) and [ADR-0011](../adr/0011-tsrs-compiler-cli.md).
 
 ## TypeScript tooling rules
 
