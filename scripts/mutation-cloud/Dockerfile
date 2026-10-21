@@ -1,4 +1,4 @@
-FROM node:24.21.0-bookworm-slim
+FROM node:24.22.1-bookworm-slim
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl procps python3 make g++ \
     && rm -rf /var/lib/apt/lists/*
