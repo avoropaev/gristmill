@@ -37,7 +37,6 @@ import type {
   MeetingProcessingResultDto,
 } from "../../contracts/meetingRecording";
 import { snapshotMeetingRecordingConfig } from "../../helpers/meetingRecordingConfigSnapshot";
-import { initializeActions } from "../../stores/actionStore";
 import { ConfirmDialog } from "../ui/dialog";
 import { useDialogs } from "../../hooks/useDialogs";
 import { openSettings } from "../../utils/openSettings";
@@ -1008,9 +1007,7 @@ export default function MeetingResultsPanel({
         : selected
     )?.run.config;
 
-    await initializeActions();
-
-    const snapshot = snapshotMeetingRecordingConfig(
+    const snapshot = await snapshotMeetingRecordingConfig(
       choice.kind === "summary" ? savedConfig?.transcription : undefined,
       choice.generateSummary
     );
@@ -1964,7 +1961,7 @@ export default function MeetingResultsPanel({
                         return;
                       }
 
-                      const snapshot = snapshotMeetingRecordingConfig(
+                      const snapshot = await snapshotMeetingRecordingConfig(
                         latestRun.run.stage === "summary" && latestRun.transcript
                           ? latestRun.run.config?.transcription
                           : undefined

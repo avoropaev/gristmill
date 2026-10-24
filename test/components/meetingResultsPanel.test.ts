@@ -530,7 +530,7 @@ async function mountPanel(
         "/hooks/useDateTimePreferences": `export function useDateTimePreferences() { return { dateFormat: "locale", timeFormat: "locale" }; }`,
         "/ui/ProviderIcon": `export const ProviderIcon = () => null;`,
         "/ui/dialog": `export const ConfirmDialog = (props) => { globalThis.__meetingResultsConfirmDialog = props; return null; };`,
-        "/helpers/meetingRecordingConfigSnapshot": `export function snapshotMeetingRecordingConfig(transcriptionOverride) { const config = ${JSON.stringify(CONFIG)}; return { config: transcriptionOverride ? { ...config, transcription: transcriptionOverride } : config, configError: null }; } export function builtinMeetingSummaryInstruction() { return "Built-in summary instruction"; }`,
+        "/helpers/meetingRecordingConfigSnapshot": `export async function snapshotMeetingRecordingConfig(transcriptionOverride) { const config = ${JSON.stringify(CONFIG)}; return { config: transcriptionOverride ? { ...config, transcription: transcriptionOverride } : config, configError: null }; } export function builtinMeetingSummaryInstruction() { return "Built-in summary instruction"; }`,
       },
     }
   ));
@@ -1724,3 +1724,21 @@ for (const hasTranscript of [false, true]) {
     assert.ok(ui.label("Transcript and audio"));
   });
 }
+
+
+test("blocked settings retry awaits the current processing snapshot before updating the run", async (t: TestContext) => {
+  const blocked = completeRun();
+  Object.assign(blocked.run, {
+    status: "blocked",
+    stage: "prepare",
+    config: null,
+    configError: { code: "detailed-notes-action-missing" },
+    errorCode: "detailed-notes-action-missing",
+  });
+  const ui = await mountPanel(t, [recording(FIRST, FIRST, "2026-09-25T10:00:00.000Z", blocked)]);
+  const retry = ui.button("meetingResults.updateRunSettings");
+  assert.ok(retry);
+  await ui.flush(() => (retry.props as { onPress(): void }).onPress());
+  assert.equal(ui.calls.update.length, 1);
+  assert.deepEqual(ui.calls.update[0], { runId: RUN, config: CONFIG, configError: null });
+});
