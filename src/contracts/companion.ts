@@ -28,7 +28,7 @@ export const companionCallRefSchema = z
   .refine((ref) =>
     ref.platform === "google-meet"
       ? /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/.test(ref.callId)
-      : /^\d{14}$/.test(ref.callId)
+      : /^(?:\d{10}|\d{14})$/.test(ref.callId)
   );
 
 export type CompanionCallRef = z.infer<typeof companionCallRefSchema>;

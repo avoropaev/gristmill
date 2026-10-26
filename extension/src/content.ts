@@ -6,7 +6,7 @@ import {
   readTelemostContext,
   telemostDocuments,
 } from "./telemostAdapter.js";
-import { callIdentity } from "./callIdentity.js";
+import { callIdentity, isTelemostOrigin } from "./callIdentity.js";
 import type { CompanionContext } from "../../src/contracts/companion.js";
 import type { ChromeApi } from "./chrome.js";
 
@@ -21,7 +21,7 @@ interface PiPWindow extends Window {
   documentPictureInPicture?: EventTarget & { window?: Window | null };
 }
 
-const telemost = document.location?.hostname === "telemost.yandex.ru";
+const telemost = isTelemostOrigin(document.location?.origin ?? "");
 
 const sourceNs = () => String(BigInt(Math.round(performance.now() * 1e6)));
 
