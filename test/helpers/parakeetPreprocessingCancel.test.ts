@@ -130,10 +130,8 @@ function loadWithConvertToWav(behavior: (outputPath: string) => void): LoadedPar
   }
 }
 
-function withIsolatedModelDir<T>(run: () => Promise<T>): Promise<T> {
+function withIsolatedModelDir<T>(run: (modelsDir: string) => Promise<T>): Promise<T> {
   const cacheRoot = fs.mkdtempSync(path.join(os.tmpdir(), "gristmill-161-cache-"));
-  const previous = process.env.GRISTMILL_CACHE_ROOT;
-  process.env.GRISTMILL_CACHE_ROOT = cacheRoot;
   const modelDir = path.join(cacheRoot, "parakeet-models", MODEL_NAME);
   fs.mkdirSync(modelDir, { recursive: true });
 
@@ -145,9 +143,7 @@ function withIsolatedModelDir<T>(run: () => Promise<T>): Promise<T> {
     fs.writeFileSync(path.join(modelDir, file), "");
   }
 
-  return run().finally(() => {
-    if (previous === undefined) delete process.env.GRISTMILL_CACHE_ROOT;
-    else process.env.GRISTMILL_CACHE_ROOT = previous;
+  return run(path.join(cacheRoot, "parakeet-models")).finally(() => {
     fs.rmSync(cacheRoot, { recursive: true, force: true });
   });
 }
@@ -157,8 +153,10 @@ test("preprocessing passes the caller's signal to convertToWav and cleans up on 
     fs.writeFileSync(outputPath, createPcm16Wav(0.5));
   });
 
-  await withIsolatedModelDir(async () => {
+  await withIsolatedModelDir(async (modelsDir) => {
     const manager = new ParakeetServerManager();
+    // A global cache override can migrate and then delete real user models.
+    manager.getModelsDir = () => modelsDir;
     manager.wsServer = {
       start: async () => {},
       transcribe: async () => ({ text: "audible", elapsed: 0 }),
@@ -187,8 +185,10 @@ test("conversion failure cleans up the temp input and partial WAV", async () => 
     throw new Error("FFmpeg exited with code 1");
   });
 
-  await withIsolatedModelDir(async () => {
+  await withIsolatedModelDir(async (modelsDir) => {
     const manager = new ParakeetServerManager();
+    // A global cache override can migrate and then delete real user models.
+    manager.getModelsDir = () => modelsDir;
     manager.wsServer = {
       start: async () => {},
       transcribe: async () => ({ text: "never", elapsed: 0 }),
@@ -209,8 +209,10 @@ test("WAV read failure after conversion also cleans up the temp files", async ()
     fs.unlinkSync(outputPath);
   });
 
-  await withIsolatedModelDir(async () => {
+  await withIsolatedModelDir(async (modelsDir) => {
     const manager = new ParakeetServerManager();
+    // A global cache override can migrate and then delete real user models.
+    manager.getModelsDir = () => modelsDir;
     manager.wsServer = {
       start: async () => {},
       transcribe: async () => ({ text: "never", elapsed: 0 }),
@@ -232,8 +234,10 @@ test("a pre-aborted signal stops before conversion and starts no inference", asy
     throw new Error("conversion must not run after cancellation");
   });
 
-  await withIsolatedModelDir(async () => {
+  await withIsolatedModelDir(async (modelsDir) => {
     const manager = new ParakeetServerManager();
+    // A global cache override can migrate and then delete real user models.
+    manager.getModelsDir = () => modelsDir;
     const wsStarts: number[] = [];
     manager.wsServer = {
       start: async () => {
