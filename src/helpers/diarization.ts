@@ -16,6 +16,7 @@ import {
 import { resolveBinaryPath, gracefulStopProcess } from "../utils/serverUtils.js";
 import { getModelsDirForService } from "./modelDirUtils.js";
 import { convertToWav } from "./ffmpegUtils.js";
+import { DIARIZATION_SAMPLE_RATE, needsDiarizationResample, readWavFormat } from "./wavFormat.js";
 import { getSafeTempDir } from "./safeTempDir.js";
 import { applyConfirmedSpeaker, type SpeakerSegment } from "./speakerAssignmentPolicy.js";
 import * as sidecarPidFile from "./sidecarPidFile.js";
@@ -381,31 +382,35 @@ export class DiarizationManager {
     return { success: false, error: "No active download to cancel" };
   }
 
-  async diarizeMeeting(
-    wavPath: string,
-    options: DiarizeOptions = {}
-  ): Promise<DiarizationSegment[]> {
+  async diarize(wavPath: string, options: DiarizeOptions = {}): Promise<DiarizationSegment[]> {
     options.signal?.throwIfAborted();
-    // Meeting mixes stay at 24 kHz for storage and playback. The local
-    // diarizer requires a separate 16 kHz mono PCM input.
-    const tempDir = await fsPromises.mkdtemp(path.join(getSafeTempDir(), "meeting-diarization-"));
+
+    // Every local route shares this boundary. Keep compatible WAVs and all
+    // stored sources unchanged; convert only the private engine input.
+    if (!needsDiarizationResample(readWavFormat(wavPath)))
+      return this._diarizePrepared(wavPath, options);
+
+    const tempDir = await fsPromises.mkdtemp(path.join(getSafeTempDir(), "diarization-input-"));
     const preparedPath = path.join(tempDir, "audio.wav");
 
     try {
       await convertToWav(wavPath, preparedPath, {
-        sampleRate: 16000,
+        sampleRate: DIARIZATION_SAMPLE_RATE,
         channels: 1,
         signal: options.signal ?? undefined,
       });
       options.signal?.throwIfAborted();
 
-      return await this.diarize(preparedPath, options);
+      return await this._diarizePrepared(preparedPath, options);
     } finally {
       await fsPromises.rm(tempDir, { recursive: true, force: true });
     }
   }
 
-  async diarize(wavPath: string, options: DiarizeOptions = {}): Promise<DiarizationSegment[]> {
+  async _diarizePrepared(
+    wavPath: string,
+    options: DiarizeOptions = {}
+  ): Promise<DiarizationSegment[]> {
     const { numSpeakers = -1, threshold = 0.55, signal = null } = options;
 
     if (signal?.aborted) return [];

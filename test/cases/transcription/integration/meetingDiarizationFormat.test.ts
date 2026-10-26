@@ -45,7 +45,7 @@ test("meeting diarization converts 24 kHz audio to temporary 16 kHz mono and pre
   const options = { numSpeakers: 2, threshold: 0.6, signal: controller.signal };
   const segments = [{ start: 0, end: 1, speaker: "speaker_0" }];
   let prepared = "";
-  manager.diarize = async (wavPath, actualOptions) => {
+  manager._diarizePrepared = async (wavPath, actualOptions) => {
     prepared = wavPath;
     assert.notEqual(wavPath, input);
     const wav = fs.readFileSync(wavPath);
@@ -57,7 +57,7 @@ test("meeting diarization converts 24 kHz audio to temporary 16 kHz mono and pre
     assert.equal(actualOptions, options);
     return segments;
   };
-  assert.deepEqual(await manager.diarizeMeeting(input, options), segments);
+  assert.deepEqual(await manager.diarize(input, options), segments);
   assert.ok(prepared);
   assert.equal(fs.existsSync(prepared), false);
   assert.equal(fs.existsSync(path.dirname(prepared)), false);
@@ -69,8 +69,8 @@ test("meeting diarization cleans its temporary WAV when the diarizer fails", asy
   const manager = new DiarizationManager();
   let prepared = "";
   const failure = new Error("diarization failed");
-  manager.diarize = async (wavPath) => { prepared = wavPath; throw failure; };
-  await assert.rejects(manager.diarizeMeeting(input), (error) => error === failure);
+  manager._diarizePrepared = async (wavPath) => { prepared = wavPath; throw failure; };
+  await assert.rejects(manager.diarize(input), (error) => error === failure);
   assert.ok(prepared);
   assert.equal(fs.existsSync(path.dirname(prepared)), false);
   assert.equal(fs.existsSync(input), true);
@@ -80,10 +80,10 @@ test("meeting diarization rejects cancellation before preparing audio", async (t
   const input = createMeetingWav(t);
   const manager = new DiarizationManager();
   let called = false;
-  manager.diarize = async () => { called = true; return []; };
+  manager._diarizePrepared = async () => { called = true; return []; };
   const controller = new AbortController();
   controller.abort();
-  await assert.rejects(manager.diarizeMeeting(input, { signal: controller.signal }), { name: "AbortError" });
+  await assert.rejects(manager.diarize(input, { signal: controller.signal }), { name: "AbortError" });
   assert.equal(called, false);
 });
 
@@ -97,9 +97,9 @@ test("meeting diarization removes partial output when conversion fails", async (
     return tempDir;
   });
   let called = false;
-  manager.diarize = async () => { called = true; return []; };
+  manager._diarizePrepared = async () => { called = true; return []; };
   fs.writeFileSync(input, "not a WAV");
-  await assert.rejects(manager.diarizeMeeting(input));
+  await assert.rejects(manager.diarize(input));
   assert.ok(tempDir);
   assert.equal(fs.existsSync(tempDir), false);
   assert.equal(fs.existsSync(input), true);
@@ -118,9 +118,36 @@ test("meeting diarization cleans up when cancellation arrives during preparation
     return tempDir;
   });
   let called = false;
-  manager.diarize = async () => { called = true; return []; };
-  await assert.rejects(manager.diarizeMeeting(input, { signal: controller.signal }), { name: "AbortError" });
+  manager._diarizePrepared = async () => { called = true; return []; };
+  await assert.rejects(manager.diarize(input, { signal: controller.signal }), { name: "AbortError" });
   assert.ok(tempDir);
   assert.equal(fs.existsSync(tempDir), false);
   assert.equal(called, false);
 });
+
+for (const channels of [1, 2]) {
+  test(`general diarization preserves a 16 kHz ${channels}-channel source and converts only stereo`, async (t) => {
+    const input = createMeetingWav(t);
+    const wav = fs.readFileSync(input);
+    wav.writeUInt16LE(channels, 22);
+    wav.writeUInt32LE(16_000, 24);
+    wav.writeUInt32LE(16_000 * channels * 2, 28);
+    wav.writeUInt16LE(channels * 2, 32);
+    fs.writeFileSync(input, wav);
+    const manager = new DiarizationManager();
+    let prepared = "";
+    manager._diarizePrepared = async (wavPath) => {
+      prepared = wavPath;
+      assert.equal(wavPath === input, channels === 1);
+      const output = fs.readFileSync(wavPath);
+      const fmt = output.indexOf(Buffer.from("fmt "));
+      assert.equal(output.readUInt16LE(fmt + 10), 1);
+      assert.equal(output.readUInt32LE(fmt + 12), 16_000);
+      return [{ start: 0, end: 1, speaker: "speaker_0" }];
+    };
+    assert.equal((await manager.diarize(input)).length, 1);
+    assert.deepEqual(fs.readFileSync(input), wav);
+    if (channels === 2) assert.equal(fs.existsSync(path.dirname(prepared)), false);
+    else assert.equal(fs.existsSync(prepared), true);
+  });
+}

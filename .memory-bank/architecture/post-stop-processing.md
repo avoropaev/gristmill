@@ -27,8 +27,9 @@ Storage, mute, clock alignment, run creation and provider input formats are in [
 ### Local diarization audio
 
 - Stored meeting mixes keep their 24 kHz format for playback and ASR.
-- Before local speaker diarization, convert a separate temporary copy to 16 kHz mono PCM16 WAV. The local diarization engine requires this format.
-- Pass the processing cancellation signal to conversion and diarization. Remove the temporary directory on success, failure or cancellation. Keep the stored mix unchanged.
+- All local diarization routes use one input boundary. Inspect the WAV format and reuse 16 kHz mono PCM16 input. Otherwise, convert a separate temporary copy to this format. The local diarization engine requires this format.
+- Pass the processing cancellation signal to conversion and diarization. Remove the temporary directory on success, failure or cancellation, including conversion failures. Keep the stored mix unchanged.
+- Missing models block processing with a configuration error. An empty result from an installed diarizer fails the run with `local-diarization-failed`; it does not request new settings.
 
 ### Speaker naming and Summary thresholds
 

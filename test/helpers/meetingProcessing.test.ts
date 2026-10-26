@@ -2910,6 +2910,30 @@ test("local meeting transcription uses post-Stop diarization and speaker-text me
   );
 });
 
+test("empty local diarization is a failed run rather than a request to change settings", async (t) => {
+  const db = createDb(t);
+  if (!db) return;
+  const storage = new MeetingRecordingStorage({ userDataPath: getUserDataDir() });
+  const config: MeetingProcessingConfig = {
+    transcription: { mode: "local", language: "en", local: { provider: "whisper", model: "base", options: { diarize: true } } },
+    summary: null,
+  };
+  const { run } = createFinishedRecording(db, storage, config);
+  const worker = workerFor(db, storage, {
+    transcribeLocal: async () => ({ success: true, text: "A synthetic test sentence." }),
+    diarizeLocal: async () => [],
+  });
+  t.after(() => worker.stop());
+  worker.onRetentionReady();
+  await worker.waitForIdle();
+  const saved = db.getMeetingProcessingRun(run.id);
+  assert.equal(saved.status, "failed");
+  assert.equal(saved.stage, "normalize");
+  assert.equal(saved.errorCode, "local-diarization-failed");
+  assert.equal(saved.hasRawProviderResponse, true);
+  assert.equal(saved.hasTranscript, false);
+});
+
 test("new capture lets an issued remote request save raw but defers normalize and summary", async (t: import("node:test").TestContext) => {
   const db = createDb(t);
 

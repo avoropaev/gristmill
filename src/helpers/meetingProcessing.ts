@@ -1408,7 +1408,8 @@ export class MeetingProcessingWorker {
         signal.throwIfAborted();
 
         if (!diarization.length)
-          throw new MeetingProcessingFailure("local-diarization-unavailable", "blocked");
+          // Missing models are checked before this call. An empty engine result is a run failure.
+          throw new MeetingProcessingFailure("local-diarization-failed", "failed");
         const segments = mergeSpeakersWithText(diarization, result.text || "", recordingDuration);
         result = { ...result, text: formatSpeakerTranscript(segments), diarized: true, segments };
       }
