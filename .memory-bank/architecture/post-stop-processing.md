@@ -24,6 +24,12 @@ Storage, mute, clock alignment, run creation and provider input formats are in [
 - `notes.transcript` and `notes.enhanced_content` show the selected run. The manual `note.content` stays separate.
 - Source tracks and previous artifacts stay after a retry and after the selection of a different version.
 
+### Local diarization audio
+
+- Stored meeting mixes keep their 24 kHz format for playback and ASR.
+- Before local speaker diarization, convert a separate temporary copy to 16 kHz mono PCM16 WAV. The local diarization engine requires this format.
+- Pass the processing cancellation signal to conversion and diarization. Remove the temporary directory on success, failure or cancellation. Keep the stored mix unchanged.
+
 ### Speaker naming and Summary thresholds
 
 - Speaker naming runs after the transcript is saved and before the optional Summary. This also applies to the Transcribe button.

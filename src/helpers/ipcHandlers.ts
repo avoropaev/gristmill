@@ -1610,7 +1610,7 @@ export class IPCHandlers {
 
         const expected = options.expectedSpeakerCount;
 
-        const diarized = await this.diarizationManager.diarize(audioPath, {
+        const diarized = await this.diarizationManager.diarizeMeeting(audioPath, {
           numSpeakers: expected && expected > 0 ? expected : -1,
           threshold: resolveThreshold(options.durationSeconds, undefined),
           signal: options.signal,

@@ -381,6 +381,30 @@ export class DiarizationManager {
     return { success: false, error: "No active download to cancel" };
   }
 
+  async diarizeMeeting(
+    wavPath: string,
+    options: DiarizeOptions = {}
+  ): Promise<DiarizationSegment[]> {
+    options.signal?.throwIfAborted();
+    // Meeting mixes stay at 24 kHz for storage and playback. The local
+    // diarizer requires a separate 16 kHz mono PCM input.
+    const tempDir = await fsPromises.mkdtemp(path.join(getSafeTempDir(), "meeting-diarization-"));
+    const preparedPath = path.join(tempDir, "audio.wav");
+
+    try {
+      await convertToWav(wavPath, preparedPath, {
+        sampleRate: 16000,
+        channels: 1,
+        signal: options.signal ?? undefined,
+      });
+      options.signal?.throwIfAborted();
+
+      return await this.diarize(preparedPath, options);
+    } finally {
+      await fsPromises.rm(tempDir, { recursive: true, force: true });
+    }
+  }
+
   async diarize(wavPath: string, options: DiarizeOptions = {}): Promise<DiarizationSegment[]> {
     const { numSpeakers = -1, threshold = 0.55, signal = null } = options;
 
