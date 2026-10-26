@@ -11,7 +11,9 @@ These markers come from a live Chrome inspection of a connected call. Telemost c
 
 ### Pages and frames
 
-- Room paths: `/j/<14 digits>` and the embedded `/private-join/<same room>`. Settings use `/@/j/<room>` for a short time.
+- Supported HTTPS origins: `telemost.yandex.ru` and `telemost.360.yandex.ru`. Both use the same Telemost adapter.
+- Room paths: `/j/<room>` and the embedded `/private-join/<same room>`. Room IDs have 10 or 14 digits. Settings use `/@/j/<room>` for a short time.
+- Browser identity checks and the desktop protocol accept the same room lengths. Other origins and room shapes stay rejected.
 - Device and account query parameters are ignored. They are never sent to Gristmill.
 - A same-origin `iframe[allowfullscreen]` contains the actual call. The root content script reads only the frame for its own room. It uses the root clock.
 

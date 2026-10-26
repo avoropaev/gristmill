@@ -310,63 +310,67 @@ test("each build connects only to its selected native host, including reconnect"
   }
 });
 
-test("Telemost identity is top-document scoped and home cannot invent a previous room", async () => {
-  const h = harness();
-  await h.ready;
-  h.ports[0].receive(snapshot("idle"));
+for (const origin of ["https://telemost.yandex.ru", "https://telemost.360.yandex.ru"]) {
+  for (const room of ["1234567890", "12345678901234"]) {
+    test(`Telemost ${origin} / ${room.length} digits stays top-document scoped and home cannot invent a room`, async () => {
+      const h = harness();
+      await h.ready;
+      h.ports[0].receive(snapshot("idle"));
 
-  const sender = {
-    id: h.api.runtime.id,
-    frameId: 0,
-    documentId: randomUUID().replaceAll("-", ""),
-    tab: { id: 7 },
-    url: "https://telemost.yandex.ru/j/12345678901234",
-  };
+      const sender = {
+        id: h.api.runtime.id,
+        frameId: 0,
+        documentId: randomUUID().replaceAll("-", ""),
+        tab: { id: 7 },
+        url: `${origin}/j/${room}`,
+      };
 
-  const context = {
-    type: "context",
-    context: {
-      sourceNs: "100",
-      presence: "unknown",
-      health: "unrecognized",
-      reason: "telemost-ui-unrecognized",
-      micMuted: null,
-      mode: "unknown",
-      participants: [],
-      activeParticipantIds: [],
-      rosterComplete: false,
-      confirmedLeave: false,
-    },
-  };
+      const context = {
+        type: "context",
+        context: {
+          sourceNs: "100",
+          presence: "unknown",
+          health: "unrecognized",
+          reason: "telemost-ui-unrecognized",
+          micMuted: null,
+          mode: "unknown",
+          participants: [],
+          activeParticipantIds: [],
+          rosterComplete: false,
+          confirmedLeave: false,
+        },
+      };
 
-  assert.deepEqual(h.request(context, { ...sender, url: "https://telemost.yandex.ru/" }), {
-    accepted: false,
-  });
-  assert.deepEqual(h.request(context, { ...sender, frameId: 1 }), { accepted: false });
-  assert.deepEqual(
-    h.request(context, { ...sender, url: "https://telemost.yandex.ru.evil.test/j/12345678901234" }),
-    { accepted: false }
-  );
-  assert.deepEqual(h.request(context, sender), { accepted: true });
-  const outgoing = h.ports[0].messages.at(-1) as { ref: { platform: string; callId: string } };
-  assert.equal(outgoing.ref.platform, "telemost");
-  assert.equal(outgoing.ref.callId, "12345678901234");
-  assert.deepEqual(h.request(context, { ...sender, url: "https://telemost.yandex.ru/" }), {
-    accepted: true,
-  });
-  assert.deepEqual(h.request(context, { ...sender, url: "https://telemost.yandex.ru/chats" }), {
-    accepted: true,
-  });
-  assert.deepEqual(
-    h.request(context, { ...sender, url: "https://telemost.yandex.ru/@/j/12345678901234" }),
-    { accepted: true }
-  );
-  assert.deepEqual(
-    h.request(context, {
-      ...sender,
-      documentId: randomUUID().replaceAll("-", ""),
-      url: "https://telemost.yandex.ru/",
-    }),
-    { accepted: false }
-  );
-});
+      assert.deepEqual(h.request(context, { ...sender, url: `${origin}/` }), {
+        accepted: false,
+      });
+      assert.deepEqual(h.request(context, { ...sender, frameId: 1 }), { accepted: false });
+      assert.deepEqual(
+        h.request(context, { ...sender, url: "https://telemost.yandex.ru.evil.test/j/12345678901234" }),
+        { accepted: false }
+      );
+      assert.deepEqual(h.request(context, sender), { accepted: true });
+      const outgoing = h.ports[0].messages.at(-1) as { ref: { platform: string; callId: string } };
+      assert.equal(outgoing.ref.platform, "telemost");
+      assert.equal(outgoing.ref.callId, room);
+      assert.deepEqual(h.request(context, { ...sender, url: `${origin}/` }), {
+        accepted: true,
+      });
+      assert.deepEqual(h.request(context, { ...sender, url: `${origin}/chats` }), {
+        accepted: true,
+      });
+      assert.deepEqual(
+        h.request(context, { ...sender, url: `${origin}/@/j/${room}` }),
+        { accepted: true }
+      );
+      assert.deepEqual(
+        h.request(context, {
+          ...sender,
+          documentId: randomUUID().replaceAll("-", ""),
+          url: `${origin}/`,
+        }),
+        { accepted: false }
+      );
+    });
+  }
+}

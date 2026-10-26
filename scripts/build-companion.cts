@@ -13,7 +13,11 @@ const root = path.resolve(__dirname, "..");
 const identities =
   require("../extension/identity.json") as typeof import("../extension/identity.json");
 
-const version = "0.3.0";
+// SAFETY: this shared browser policy has no runtime platform dependencies.
+const { COMPANION_CALL_MATCHES } =
+  require("../extension/src/callIdentity.ts") as typeof import("../extension/src/callIdentity.js");
+
+const version = "0.3.1";
 
 execFileSync(path.join(root, "node_modules", ".bin", "tsrs"), ["-p", "extension/tsconfig.json"], {
   cwd: root,
@@ -66,10 +70,10 @@ for (const [channel, identity] of Object.entries(identities)) {
         key: identity.publicKey,
         icons,
         permissions: ["nativeMessaging", "storage", "alarms"],
-        host_permissions: ["https://meet.google.com/*", "https://telemost.yandex.ru/*"],
+        host_permissions: COMPANION_CALL_MATCHES,
         content_scripts: [
           {
-            matches: ["https://meet.google.com/*", "https://telemost.yandex.ru/*"],
+            matches: COMPANION_CALL_MATCHES,
             js: ["content.js"],
             run_at: "document_idle",
           },

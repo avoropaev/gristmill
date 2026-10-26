@@ -1,4 +1,4 @@
-import { callIdentity } from "./callIdentity.js";
+import { callIdentity, isTelemostOrigin } from "./callIdentity.js";
 import { z } from "zod";
 import {
   COMPANION_MAX_MESSAGE_BYTES,
@@ -93,7 +93,7 @@ export function startCompanionWorker(api: ChromeApi, hostName: string): void {
       const previous = contexts.get(tabId);
 
       if (
-        url.origin === "https://telemost.yandex.ru" &&
+        isTelemostOrigin(url.origin) &&
         ["/", "/chats"].includes(url.pathname) &&
         previous?.ref.platform === "telemost" &&
         previous.ref.documentId === sender.documentId &&
