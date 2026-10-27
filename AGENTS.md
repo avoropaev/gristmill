@@ -1,5 +1,20 @@
 # Gristmill agent rules
 
+## Public repository: approval before every push
+
+This fork is public. Every push to any remote requires fresh explicit approval
+from Alexey for that exact publication. This includes topic branches, tags,
+maintenance updates and scheduled runs. Before asking, show the destination,
+branch/ref names, commit IDs, scope and secret/privacy scan results. If the scope
+or commits change, obtain approval again. Earlier push approval and permission
+to implement, commit, build or install do not authorize another push.
+Prepare and verify changes locally first. An unattended run must leave publication
+pending and request approval. Check both author and committer metadata as well
+as file contents. Use the account's GitHub noreply email in this public repository;
+cherry-pick can retain an older author email even after local config changes.
+Never force-push or rewrite published history
+without separate approval for the exact rewrite.
+
 ## Start here
 
 1. Read [.memory-bank/index.md](.memory-bank/index.md). Then read only the documents that your task needs.

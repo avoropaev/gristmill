@@ -1,7 +1,13 @@
 # Personal fork and branch workflow
 
 This checkout maintains the personal fork of Gristmill. Read this document before
-starting a feature, changing branches or integrating upstream changes. Read
+starting a feature, changing branches or integrating upstream changes.
+Every push requires fresh explicit approval from Alexey because the fork is public.
+Before requesting approval, show the remote, refs, exact commits, scope and
+secret/privacy scan results. Changed commits or scope require new approval.
+Do not infer publication permission from an earlier approval or from a request
+to implement, commit, build or install. This applies to every branch, tag and
+scheduled run. Leave publication pending during unattended work. Read
 [local patch maintenance](local-patch-maintenance.md) before building or installing
 an upstream update.
 
@@ -11,17 +17,18 @@ The primary checkout is `~/projects/gristmill`. The local Codex project is
 `gristmill` and uses this folder as its primary source. Obsidian and the separate
 AI automation repository are not dependencies of this project.
 
-| Name                                    | Role                                            | Rule                                                                                                         |
-| --------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `origin`                                | Original repository: `timurkhakhalev/gristmill` | Fetch upstream changes. Do not push personal changes here.                                                   |
-| `personal`                              | Personal fork: `avoropaev/gristmill`            | Push local features and the maintained branch here.                                                          |
-| `origin/main`                           | Upstream development branch                     | This is the update source. The original branch is `main`, not `master`.                                      |
-| Local `main`                            | Unmodified upstream tracking branch             | Do not start personal features here. Advance only by fast-forward to upstream when needed.                   |
-| `codex/local-maintained`                | Accepted source for the personal build          | Contains all accepted local features and upstream merges. This is the default base for new work.             |
-| `codex/meeting-diarization-16khz`       | Published historical repair branch              | Contains both the WAV and Companion fixes. Keep it for existing issue links; do not use it for new features. |
-| `codex/<topic>`                         | One new feature or repair                       | Branch from the maintained source and merge back after review and checks.                                    |
-| `codex/local-update-<date>-<short-sha>` | Upstream integration candidate                  | Merge upstream into an isolated candidate. Promote only after the update procedure passes.                   |
-| `refs/gristmill/installed`              | Local receipt for the installed source          | Update only after installing and verifying that source. It is not a development branch.                      |
+| Name                                    | Role                                            | Rule                                                                                                                                  |
+| --------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `origin`                                | Original repository: `timurkhakhalev/gristmill` | Fetch upstream changes. Do not push personal changes here.                                                                            |
+| `personal`                              | Personal fork: `avoropaev/gristmill`            | Push local features and the maintained branch here.                                                                                   |
+| `origin/main`                           | Upstream development branch                     | This is the update source. The original branch is `main`, not `master`.                                                               |
+| Local `main`                            | Unmodified upstream tracking branch             | Do not start personal features here. Advance only by fast-forward to upstream when needed.                                            |
+| `codex/local-maintained`                | Accepted source for the personal build          | Contains all accepted local features and upstream merges. This is the default base for new work.                                      |
+| `codex/meeting-diarization-16khz`       | Historical mixed repair branch                  | Contains WAV and Companion changes. Keep old references intact; do not present it as a Telemost-only contribution.                    |
+| `codex/fix-telemost-360`                | Scoped contribution for issue #445              | Based on upstream main and contains only the Telemost change. Publish only after approval; update issue links only after publication. |
+| `codex/<topic>`                         | One new feature or repair                       | Branch from the maintained source and merge back after review and checks.                                                             |
+| `codex/local-update-<date>-<short-sha>` | Upstream integration candidate                  | Merge upstream into an isolated candidate. Promote only after the update procedure passes.                                            |
+| `refs/gristmill/installed`              | Local receipt for the installed source          | Update only after installing and verifying that source. It is not a development branch.                                               |
 
 Remote names are deliberate: `origin` points to the original repository and
 `personal` points to the fork. Do not assume that `origin` is the fork. A fork
@@ -46,6 +53,13 @@ The branch name does not imply that it contains only the WAV repair. The
 maintained branch was created from this combined history and then received the
 update runbook. Do not cherry-pick these repairs onto the maintained branch again.
 
+The separate `codex/fix-telemost-360` branch carries the same Telemost patch as
+`f76309b`, applied directly to the upstream base. It excludes the WAV repairs,
+model-cache test repair and personal maintenance documents. Issue #445 describes
+this scoped change, not the complete mixed branch. Keep its links aimed at the
+scoped branch and its own commit after approved publication. Do not merge the
+entire maintained branch into this contribution branch.
+
 The comparison ref `refs/remotes/community/diarization-sample-rate` points to
 `92af3d6` from
 [the community branch for issue #443](https://github.com/sykobets/gristmill/tree/fix/diarization-sample-rate).
@@ -67,6 +81,18 @@ single-person Telemost call. It did not establish multi-person voice/name
 matching quality. The repair does not solve voice over-clustering. Preserve this
 scope when describing the fixes.
 
+## Publication privacy
+
+Every push requires fresh approval for the exact destination, refs and commits.
+Run a secret scan and inspect sensitive paths, added content, commit messages,
+and both author and committer emails first. Use the account's GitHub noreply
+address in this repository's local Git configuration. Do not silently change
+global Git identity for unrelated work. Cherry-pick preserves author metadata;
+changing `user.email` only changes future default identity and does not repair
+old commits. Do not attach private audit reports or detected secret values to
+public issues or commits. Any proposed published-history rewrite needs separate
+approval; local preparation does not authorize a force-push.
+
 ## Start and integrate a new feature
 
 1. Inspect Git status, remotes, branches, worktrees and the installed receipt.
@@ -82,13 +108,14 @@ scope when describing the fixes.
    that would omit accepted personal changes.
 4. Implement one scoped change. Include its regression checks and related
    documentation. Apply the repository quality policy; do not test on private
-   meeting data. Push the topic branch to `personal` for review or backup.
+   meeting data. After a secret/privacy scan, request approval for the exact topic commits and
+   push to `personal` for review or backup only after approval.
 5. If the maintained source advances during feature work, merge that source into
    the topic branch, resolve conflicts there and repeat affected checks. Do not
    rebase published history.
 6. After review and successful required checks, merge the topic into
-   `codex/local-maintained` with a merge commit (`--no-ff`). Push the maintained
-   branch to `personal` without force. This keeps each feature's integration
+   `codex/local-maintained` with a merge commit (`--no-ff`). Request approval for the exact publication,
+   then push the maintained branch to `personal` without force only after approval. This keeps each feature's integration
    visible without losing its original commits.
 7. Source integration and application installation are separate actions. Install
    only when requested or under the agreed scheduled update policy. Leave

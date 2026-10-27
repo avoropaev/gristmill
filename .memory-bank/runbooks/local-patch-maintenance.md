@@ -81,9 +81,12 @@ tests when an upstream implementation replaces local code.
    normal profile availability. Do not change settings, auto-start a recording,
    upload private data or change browser permissions. Companion keeps its
    installed path; if Chrome needs a manual reload, report that explicitly.
-6. Only after verification, fast-forward `codex/local-maintained` to the candidate,
-   update `refs/gristmill/installed` and push the maintained branch to the personal
-   remote without force. Preserve both the source history and the previous app
+6. Only after verification, fast-forward `codex/local-maintained` to the candidate
+   and update `refs/gristmill/installed` locally. Every push requires fresh explicit
+   approval from Alexey. Show the destination, refs, exact commits, change scope and
+   secret/privacy scan results before asking. An unattended run must keep the
+   publication pending; local installation permission does not authorize a push.
+   Push to the personal remote without force only after approval. Preserve both the source history and the previous app
    archive. A source push failure must be reported honestly.
 
 An installation failure must retain or restore the previous app through the
