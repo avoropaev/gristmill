@@ -6,3 +6,5 @@
 - [testing.md](testing.md) — test domains and kinds, file locations, compiler probes and renderer fixtures.
 
 - [local-patch-maintenance.md](local-patch-maintenance.md) — merge upstream updates, preserve local fixes, verify and install the personal build.
+
+- [personal-fork-workflow.md](personal-fork-workflow.md) — remote and branch roles, repair history, feature integration and upstream merges.

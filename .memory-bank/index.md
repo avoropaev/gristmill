@@ -39,6 +39,7 @@ It has no backend. All data is in the local application profile.
 
 ## Reading paths
 
+- **Personal fork, feature branches and upstream updates:** [fork workflow](runbooks/personal-fork-workflow.md) → [local patch maintenance](runbooks/local-patch-maintenance.md).
 - **Onboarding:** this file → [architecture overview](architecture/overview.md) → [product overview](product/overview.md) → [quality steering](steerings/quality.md).
 - **Recording and processing:** [ADR-0003](adr/0003-record-then-process.md) → [recording and processing](architecture/recording-processing.md) → [post-Stop processing](architecture/post-stop-processing.md) → [audio storage](architecture/audio-storage.md).
 - **Providers, chat, BB:** [product overview](product/overview.md#not-in-the-product) → [BB integration](architecture/bb-integration.md).

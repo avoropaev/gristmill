@@ -3,6 +3,8 @@
 This procedure maintains one personal build while upstream development continues.
 The maintained source branch is `codex/local-maintained`. Topic branches remain
 available for issue links and code review. Do not rewrite their history.
+For repository roles, branch history and new feature work, read the
+[personal fork workflow](personal-fork-workflow.md).
 
 ## Required behavior
 
@@ -37,6 +39,9 @@ tests when an upstream implementation replaces local code.
    `refs/gristmill/installed` records the last verified installed source. If both
    upstream and maintained source are already included in that ref, no update is
    needed. A new local fix also requires an update even if upstream did not change.
+   Documentation-only changes do not require a new application package. Inspect
+   changed paths and runtime/build inputs, not only tip hashes. Keep the installed
+   receipt unchanged when no new package is installed.
 3. Create an isolated candidate branch and worktree from `codex/local-maintained`.
    Merge the selected upstream SHA there. Do not rebase, force-push, reset the
    maintained branch or build directly in a working tree with unrelated changes.
@@ -61,7 +66,10 @@ tests when an upstream implementation replaces local code.
    identity and supported origins. Exercise the packaged diarization helper with
    synthetic audio and the real local engine. Do not open an empty-profile GUI
    where it can be mistaken for the user's normal profile.
-3. Install only when Gristmill is closed and no capture or processing is active.
+3. Before installation, confirm that the maintained tip did not advance during
+   candidate preparation. If it advanced, merge the new accepted source into the
+   candidate and repeat the affected checks and package verification first.
+   Install only when Gristmill is closed and no capture or processing is active.
    Do not stop an active meeting or quit the app without user involvement. Keep a
    verified candidate if installation must wait; check it again on the next run.
 4. Back up the closed production profile to a private archive outside the source
